@@ -1,0 +1,30 @@
+<div class="header">
+    <div class="inner-div-header">
+        <div class="left">
+            <h1 style=" color: white;">WOW BAZZAR</h1>
+        </div>
+        <div class="right">
+            <div class="profile-div">
+                <div class="profile-btn" id="profile-btn">
+                    <img src="/icons/profile-icon.png" alt="notification" height="25px" width="24px">
+                </div>
+                <h4 class="<%= userId %>" id="username"><%= username %></h4>
+            </div>
+            <div>
+                <a id="mycart" href="<%= route %>" style="background-color:#642b59; color: white; border: none; padding: 8px; border-radius: 5px; text-decoration: none;"><%= btnText %></a>
+            </div>
+            <% if (loggedin) { %>
+                <div>
+                    <a id="mycart" href="/changepassword" style="background-color:#642b59; color: white; border: none; padding: 8px; border-radius: 5px; text-decoration: none;">Change Pass</a>
+                </div>
+                <div>
+                    <a id="logout" href="/logout" style="background-color:#642b59; color: white; border: none; padding: 8px; border-radius: 5px; text-decoration: none;">Logout</a>
+                </div>
+            <% }  else {%>
+                <div>
+                    <a id="logout" href="/login" style="background-color:#642b59; color: white; border: none; padding: 8px; border-radius: 5px; text-decoration: none;">LogIn</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>

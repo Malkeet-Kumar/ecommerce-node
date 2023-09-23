@@ -1,0 +1,27 @@
+<div class="header">
+    <div class="inner-div-header">
+        <div class="left">
+            <h1 style=" color: white;">WOW BAZZAR</h1>
+        </div>
+        <div class="right">
+            <div class="profile-div">
+                <div class="profile-btn" id="profile-btn">
+                    <img src="/icons/profile-icon.png" alt="notification" height="25px" width="24px">
+                </div>
+                <h4 class="<%= userId %>" id="username"><%= username %></h4>
+            </div>
+            <% if (loggedin) { %>
+                <div>
+                    <a id="addproduct" style="user-select: none; cursor: pointer; background-color:#642b59; color: white; border: none; padding: 8px; border-radius: 5px; text-decoration: none;">Add Product</a>
+                </div>
+                <div>
+                    <a id="logout" href="/admin/logout" style="background-color:#642b59; color: white; border: none; padding: 8px; border-radius: 5px; text-decoration: none;">Logout</a>
+                </div>
+            <% }  else {%>
+                <div>
+                    <a id="logout" href="/admin/login" style="background-color:#642b59; color: white; border: none; padding: 8px; border-radius: 5px; text-decoration: none;">LogIn</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .content-div{
+            padding-top: 20px;
+            margin-top: 10vh;
+            display: grid;
+            grid-template-columns: 20% 20% 20% 20% 20%;
+            grid-template-rows: 80%;
+            grid-row-gap: 10px;
+        }
+        .product-item{
+            margin: 0 auto;
+            height: 60vh;
+            width: 18vw;
+            background-color: white;
+            box-shadow: 1px 1px 3px grey;
+        }
+        .product-image{
+            padding: 20px 10px;
+            height: 70%;
+            width: 100%;
+            background-repeat: no-repeat;
+            
+        }
+        .product-title, .product-price{
+            height: 8%;
+            width: 80%;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-left: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .product-actions{
+            height: 14%;
+            width: 100%;
+            display: flex;
+            padding: 2px 4px;
+            margin-bottom: 2px;
+            border-top: 1px solid grey;
+        }
+        .actionBtn-addtocart, .actionBtn-viewdesc{
+            height: 96%;
+            width: 50%;
+            padding: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border: none;
+            margin: 0px 2px;
+        }
+        .actionBtn-addtocart{
+            background-color: black;
+        }
+        .actionBtn-viewdesc{
+            background-color: #2e2c2c;
+        }
+        .p-image{
+            height: inherit;
+            width: inherit;
+        }
+        #loadMore{
+            padding: 8px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            background-color: blueviolet;
+            border: none;
+            border-radius: 5px;
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+        }
+        #viewdesc{
+            background-color: #292727;
+        }
+
+        .background-div{
+            margin-top: 10vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+            width: 100vw;
+            background-color: rgba(0, 0, 0, 0.329);
+        }
+        .product-details-p{
+            background-color: white;
+            z-index: 2;
+            height: 80vh;
+            width: 60vw;
+            box-shadow: 1px 1px 4px black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        } 
+        .close{
+            height: 6%;
+            width: 100%;  
+            background-color: white;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            padding: 0 5px;
+            font-size: 25px;
+            font-weight: bold;
+        }
+        .product-image-p{
+            height: 80%;
+            width: 60%;
+            padding: 10px;
+            margin: 0 10px;
+        }
+        .product-info-p{
+            width: 40%;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .p-image-p{
+            height: 100%;
+            width: 100%;
+        }
+
+        .product-info-item{
+            padding: 2px;
+            margin: 5px 2px;
+        }
+
+    </style>
+    <link rel="stylesheet" href="/dashboardHeader.css">
+</head>
+<body>
+    <%- include('components/header') %>
+    <div class="content-div" id="content-div"></div>  
+    <div class="background-div" id="a" style="position: fixed; top: 0; display: none;"></div>  
+    <button id="loadMore">Load More</button>
+</body>
+<script>
+        const container = document.getElementById("content-div");
+        const loadMoreBtn = document.getElementById("loadMore");
+        let itemBatch = 1;
+        var loadedProducts = [];
+        function fetcProducts(itembatch){
+            fetch("/p/products/"+itembatch++)
+            .then(p=>p.json())
+            .then(products=>{
+                if(!products){
+                    alert("there is no more products to load !");
+                    return;
+                }
+                products.forEach(element => {
+                    loadedProducts.push(element);
+                    const p_item = document.createElement("div")
+                    p_item.className = "product-item"
+
+                    p_item.innerHTML = `
+                        <div class="product-image"><img class="p-image" src="${element.image.endsWith(".jpg") || element.image.endsWith(".png")?element.image:"/uploads/"+element.image}" alt="kdjskjs"></div>
+                        <div class="product-title">${element.productName}</div>
+                        <div class="product-price">$ ${element.price}</div>`;
+                    
+                    const  actionDiv = document.createElement("div");
+                    actionDiv.className = "product-actions";
+
+                    const addToCartBtn = document.createElement("button");
+
+                    addToCartBtn.className = "actionBtn-addtocart";
+                    addToCartBtn.id = element._id;
+                    addToCartBtn.innerText = "Add to Cart";
+
+                    addToCartBtn.addEventListener('click',e=>{
+                        fetch("/cart/"+element._id,{method:"post",})
+                        .then(res=>{
+                            // debugger;
+                            console.log(res,"status ye diya hai");
+                            if(res.redirected){
+                                location.href =  res.url
+                                return;
+                            } else {
+                                addToCartBtn.style.color = "grey"
+                                addToCartBtn.innerText = "Added to Cart"
+                            }
+                        })
+                        .catch(err=>console.log(err))
+                    })
+                    
+                    
+                    const viewDescBtn = document.createElement("button");
+                    viewDescBtn.className = "actionBtn-viewdesc";
+                    viewDescBtn.id = element._id;
+                    viewDescBtn.innerText = "View Desc"
+
+                    viewDescBtn.addEventListener('click',e=>{
+                        viewDesc(element)
+                    })
+
+                    actionDiv.appendChild(addToCartBtn);
+                    actionDiv.appendChild(viewDescBtn);
+                    p_item.appendChild(actionDiv);
+
+                    container.appendChild(p_item);
+                });
+            })
+        }
+        
+        fetcProducts(itemBatch);
+        
+        loadMoreBtn.addEventListener('click',(e)=>{
+            itemBatch++;
+            fetcProducts(itemBatch);
+            console.log(loadedProducts);
+            container.scrollTop = container.scrollHeight;
+            window.scrollTo(0, container.scrollHeight);
+            
+        })
+
+        function productDescriptionWindow(p){         
+            const p_details = document.createElement("div")
+            p_details.className = "product-details-p";
+            p_details.id = "popDesc"
+            p_details.innerHTML = `
+            <div class="close" id="popUpDesc" onclick="closePopUpDesc()"><button onclick = "closePopUpDesc()" style="color: black; background-color:white; border:none; font-size: 18px;">&times;</button></div>
+                <div style="height: 100%; width: 100%; display: flex;">
+                    <div class="product-image-p"><img class="p-image-p" src="${p.image.endsWith(".jpg") || p.image.endsWith(".png")?p.image:"/uploads/"+p.image}" alt="Product_image-p"></div>
+                    <div class="product-info-p">
+                        <div class="product-info-item"><h3>${p.productName}</h3></div>
+                        <div class="product-info-item"><h2>Price : $ ${p.price}</h2></div>
+                        <div class="product-info-item"><h3>Stock : ${p.quantity}</h3></div>
+                        <div class="product-info-item"><p>Description : ${p.desc}</p></div>
+                    </div>
+            </div>`
+            return p_details;
+        }
+
+        function closePopUpDesc(e){
+            const containerA = document.getElementById("a");
+            containerA.style.display = "none";
+            loadMoreBtn.style.display = "block"
+            containerA.innerHTML = '';
+            container.style.display = "grid";
+        }
+
+        function viewDesc(element){
+            const popup = productDescriptionWindow(element)
+            container.style.display = "none"
+            loadMoreBtn.style.display = "none"
+            document.getElementById("a").appendChild(popup);
+            document.getElementById("a").style.display="flex"
+        }
+    
+    </script>
+</html>

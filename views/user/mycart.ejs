@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Cart</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .content-div {
+            padding-top: 20px;
+            margin-top: 10vh;
+            display: grid;
+            grid-template-columns: 20% 20% 20% 20% 20%;
+            grid-template-rows: 80%;
+            grid-row-gap: 10px;
+        }
+
+        .product-item {
+            margin: 0 auto;
+            height: 60vh;
+            width: 18vw;
+            background-color: white;
+            box-shadow: 1px 1px 3px grey;
+        }
+
+        .product-image {
+            padding: 20px 10px;
+            height: 60%;
+            width: 100%;
+            background-repeat: no-repeat;
+
+        }
+
+        .product-title,
+        .product-price {
+            height: 8%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-left: 15px;
+        }
+
+        .product-actions {
+            height: 12%;
+            width: 100%;
+            display: flex;
+            padding: 2px 4px;
+            margin-bottom: 2px;
+            border-top: 1px solid grey;
+        }
+
+        .actionBtn-deleteCart,
+        .actionBtn-viewdesc {
+            height: 96%;
+            width: 50%;
+            padding: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border: none;
+            margin: 0px 2px;
+        }
+
+        .actionBtn-deleteCart {
+            background-color: black;
+        }
+
+        .actionBtn-viewdesc {
+            background-color: #2e2c2c;
+        }
+
+        .p-image {
+            height: inherit;
+            width: inherit;
+        }
+
+        .p-image-p {
+            height: 100%;
+            width: 100%;
+        }
+
+        #loadMore {
+            padding: 8px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            background-color: blueviolet;
+            border: none;
+            border-radius: 5px;
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+        }
+
+        #viewdesc {
+            background-color: #292727;
+        }
+
+        .product-quantity {
+            height: 12%;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 50% 25% 25%;
+            padding: 4px 10px;
+        }
+
+        .quanBtn {
+            height: 90%;
+            width: 90%;
+            background-color: steelblue;
+            padding: 4px;
+            border: none;
+            font-size: 15px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .background-div {
+            margin-top: 10vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+            width: 100vw;
+            background-color: rgba(0, 0, 0, 0.329);
+        }
+
+        .product-details-p {
+            background-color: white;
+            z-index: 2;
+            height: 80vh;
+            width: 60vw;
+            box-shadow: 1px 1px 4px black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .close {
+            height: 6%;
+            width: 100%;
+            background-color: white;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            padding: 0 5px;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .product-image-p {
+            height: 100%;
+            width: 40%;
+            padding: 10px;
+            margin-right: 10px;
+        }
+
+        .product-info-p {
+            width: 60%;
+            height: 100%;
+            padding: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="/dashboardHeader.css">
+</head>
+
+<body>
+    <%- include('components/header') %>
+        <div class="content-div" id="content-div"></div>
+        <div class="background-div" id="a" style="position: fixed; top: 0; display: none;"></div>
+        <!-- <button id="loadMore">Load More</button> -->
+</body>
+<script>
+    const container = document.getElementById("content-div")
+
+    let itemBatch = 1;
+    var loadedProducts = [];
+    function fetcProducts(itembatch) {
+        fetch("/mycart")
+            .then(p => p.json())
+            .then(products => {
+                if (products.length <= 0) {
+                    if (!container.hasChildNodes()) {
+                        const emptyMessage = document.createElement("h1");
+                        emptyMessage.innerText = "Cart is empty !";
+                        container.appendChild(emptyMessage);
+                    }
+                }
+                products.forEach(element => {
+                    let itemQuantity = element.quantity;
+                    loadedProducts.push(element);
+                    const p_item = document.createElement("div")
+                    p_item.className = "product-item"
+
+                    p_item.innerHTML = `
+                        <div class="product-image"><img class="p-image" src="${(element.itemId.image.endsWith(".jpg") || element.itemId.image.endsWith(".png"))?element.itemId.image : "/uploads/"+element.itemId.image}" alt="kdjskjs"></div>
+                        <div class="product-title">${element.itemId.productName}</div>
+                        <div class="product-price">${element.itemId.price} $</div>`;
+
+                    const productQuantityDiv = document.createElement("div");
+                    productQuantityDiv.className = "product-quantity";
+
+                    const quant = document.createElement("p");
+                    quant.id = "order-quantity";
+                    quant.innerText = "Quantity : "+element.quantity
+
+                    const quanIncre = document.createElement("button");
+                    quanIncre.className = "quanBtn";
+                    quanIncre.innerText = "+"
+                    quanIncre.addEventListener('click', (e) => {
+                        if (itemQuantity >= element.itemId.quantity) {
+                            alert("you have reached the maximum stock limit.")
+                            return false
+                        }
+                        itemQuantity++;
+                        fetch("/cart/" + element._id, {
+                            method: "PATCH",
+                            headers: {
+                                "Content-Type": "Application/Json",
+                            },
+                            body: JSON.stringify({
+                                quantity: itemQuantity
+                            })
+                        })
+                        .then(res =>res.json())
+                        .then(res=>{
+                            if(res)
+                                quant.innerText = "Quantity : " + res.quantity                            
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            alert("Something went wrong !");
+                        })
+                    })
+
+                    const quanDecre = document.createElement("button");
+                    quanDecre.className = "quanBtn";
+                    quanDecre.innerText = "-"
+                    quanDecre.addEventListener('click', (e) => {
+                        if (itemQuantity == 1) {
+                            alert("You need minimum 1 quantity to place the order !")
+                            return false;
+                        }
+                        itemQuantity--;
+                        fetch("/cart/" + element._id, {
+                            method: "PATCH",
+                            headers: {
+                                "Content-Type": "Application/Json",
+                            },
+                            body: JSON.stringify({ quantity: itemQuantity })
+                        })
+                        .then(res =>res.json())
+                        .then(res=>{
+                            if(res)
+                                quant.innerText = "Quantity : " + res.quantity                            
+                        })
+                        .catch(err => {
+                            console.log(err);
+                            alert("Something went wrong !");
+                        })
+                    })
+
+                    productQuantityDiv.appendChild(quant)
+                    productQuantityDiv.appendChild(quanIncre)
+                    productQuantityDiv.appendChild(quanDecre)
+
+                    const actionDiv = document.createElement("div");
+                    actionDiv.className = "product-actions";
+
+                    const deleteCart = document.createElement("button");
+
+                    deleteCart.className = "actionBtn-deleteCart";
+                    deleteCart.id = element._id;
+                    deleteCart.innerText = "Delete";
+
+                    deleteCart.addEventListener('click', e => {
+                        fetch("/cart/" + element._id, { method: "delete" })
+                            .then(res => {
+                                if (res.status) {
+                                    p_item.remove()
+                                    if (!container.hasChildNodes()) {
+                                        const emptyMessage = document.createElement("h1");
+                                        emptyMessage.innerText = "Cart is empty !";
+                                        container.appendChild(emptyMessage);
+                                    }
+                                }
+                            })
+                            .catch(err => console.log(err))
+                    })
+
+
+                    const viewDescBtn = document.createElement("button");
+                    viewDescBtn.className = "actionBtn-viewdesc";
+                    viewDescBtn.id = element._id;
+                    viewDescBtn.innerText = "View Desc"
+
+                    viewDescBtn.addEventListener('click', e => {
+                        viewDesc(element);
+                    })
+
+                    actionDiv.appendChild(deleteCart);
+                    actionDiv.appendChild(viewDescBtn);
+                    p_item.appendChild(productQuantityDiv);
+                    p_item.appendChild(actionDiv);
+
+                    container.appendChild(p_item);
+                });
+            })
+    }
+
+    fetcProducts();
+
+    function productDescriptionWindow(p) {
+        const p_details = document.createElement("div")
+        p_details.className = "product-details-p";
+        p_details.id = "popDesc"
+        p_details.innerHTML = `
+        <div class="close" id="popUpDesc" onclick="closePopUpDesc()"><button onclick = "closePopUpDesc()">&times;</button></div>
+            <div style="height: 100%; width: 100%; display: flex;">
+                <div class="product-image-p"><img class="p-image-p" src="${(p.itemId.image.endsWith(".jpg") || p.itemId.image.endsWith(".png"))?p.itemId.image : "/uploads/"+p.itemId.image}" alt="Product_image-p"></div>
+                <div class="product-info-p">
+                    <div class="product-name-p"><h3>${p.itemId.productName}</h3></div>
+                    <div class="product-price-p"><h2>Price : ${p.itemId.price} $</h2></div>
+                    <div class="product-stock-p"><h3>Stock : ${p.itemId.quantity}</h3></div>
+                    <div class="product-desc-p"><p>Description : ${p.itemId.desc}</p></div>
+                </div>
+        </div>`
+        return p_details;
+    }
+
+    function closePopUpDesc(e) {
+        const containerA = document.getElementById("a");
+        containerA.style.display = "none";
+        containerA.innerHTML = '';
+        container.style.display = "grid";
+    }
+
+    function viewDesc(element) {
+        const popup = productDescriptionWindow(element)
+        container.style.display = "none"
+        document.getElementById("a").appendChild(popup);
+        document.getElementById("a").style.display = "flex"
+    }
+</script>
+
+</html>

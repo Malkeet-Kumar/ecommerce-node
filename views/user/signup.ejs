@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login || Signup</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .header {
+            height: 8vh;
+            width: 100%;
+            background-color: black;
+        }
+
+        .signup-div {
+            height: 92vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-signup-form {
+            height: auto;
+            width: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            padding: 20px;
+            box-shadow: 1px 1px 5px black;
+        }
+
+        /* Style the input container */
+        .input-container {
+            display: flex;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        /* Style the form icons */
+        .icon {
+            padding: 10px;
+            background: dodgerblue;
+            color: white;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* Style the input fields */
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            outline: none;
+        }
+
+        .input-field:focus {
+            border: 2px solid dodgerblue;
+        }
+
+        /* Set a style for the submit button */
+        .btn {
+            background-color: dodgerblue;
+            color: white;
+            font-weight: bold;
+            font-size: 15px;
+            padding: 12px 20px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            opacity: 0.9;
+        }
+
+        .btn:hover {
+            opacity: 1;
+        }
+
+        .spanAnchor {
+            text-decoration: none;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+    </div>
+    <div class="signup-div">
+        <form action="/signup" method="post" class="login-signup-form" id="signup-form">
+            <h3 style="text-align: center; margin-bottom: 15px;">Create Account</h3 style="text-align: center;">
+            <div class="input-container">
+                <i class="fa fa-user icon"></i>
+                <input class="input-field" type="text" placeholder="Username" name="username" id="username">
+            </div>
+
+            <p id="error-message-email"></p>
+            <div class="input-container">
+                <i class="fa fa-envelope icon"></i>
+                <input class="input-field" type="text" placeholder="Email" name="email" id="email">
+            </div>
+
+            <div id="error-message-password"></div>
+            <div class="input-container">
+                <i class="fa fa-key icon"></i>
+                <input class="input-field" type="password" placeholder="Password" name="password" id="password">
+            </div>
+            <% if (err) { %>
+                <p style="margin: 15px 0; color: red; font-weight: bold; word-wrap: break-word;">
+                    <%= err %>
+                </p>
+                <% } %>
+                    <button type="submit" class="btn">Register</button>
+                    <p style="margin-top: 15px;">Registered ? <a class="spanAnchor" href="/login">Login here</a></p>
+        </form>
+    </div>
+</body>
+<script>
+    document.getElementById("email").addEventListener('keyup', (e) => {
+        const email = document.getElementById("email").value.trim()
+        const validationMessage = document.getElementById("error-message-email");
+        const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+        if (emailRegex.test(email)) {
+            // Valid email address
+            validationMessage.textContent = 'Email is valid.';
+            validationMessage.style.color = 'green';
+        } else {
+            // Invalid email address
+            validationMessage.textContent = 'Please enter a valid email.';
+            validationMessage.style.color = 'red';
+        }
+    })
+    
+    document.getElementById("password").addEventListener('keyup',(e)=>{
+        const password = document.getElementById("password").value.trim()
+        const password_regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
+        const validationMessage = document.getElementById("error-message-password");
+        
+        if (password_regex.test(password)) {
+            // Valid email address
+            validationMessage.textContent = 'Strong Password';
+            validationMessage.style.color = 'green';
+        } else {
+            // Invalid email address
+            validationMessage.textContent = 'Weak Password';
+            validationMessage.style.color = 'red';
+        }
+    })
+    
+
+    document.getElementById("signup-form").addEventListener('submit', (e) => {
+        const username = document.getElementById("username").value.trim()
+        const email = document.getElementById("email").value.trim()
+        const password = document.getElementById("password").value.trim()
+        let err = ""
+        if (username.length < 5) {
+            e.preventDefault();
+            err = "Username is required\n"
+            alert(err)
+            return false;
+        }
+        if(email.length<8){
+            e.preventDefault()
+            alert("A valid email is required")
+        }
+        if (password.length < 8) {
+            e.preventDefault()
+            err = `Password requires:
+                1. 8-15 character long
+                2. Uppercase letter
+                3. Lowercase letter
+                4. A number
+                5. A special letter
+                6. Spaces are not allowed`
+            alert(err)
+            return false;
+        }
+        return true;
+    })
+</script>
+
+</html>
