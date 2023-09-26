@@ -28,16 +28,16 @@ app.use("/",UserRoutes)
 app.use("/admin",AdminRoutes)
 app.use("/p",ProductRoutes)
 
-db.init()
-.then(()=>{
-    console.log("Database connected");
+db.connect(err=>{
+    if(err){
+        console.log("Error can not connect to database ! ",err);
+    }
+    console.log("Connected to database ");
     app.listen(process.env.PORT,()=>{
     console.log("Server is running on port 8000");
     })
 })
-.catch(err=>{
-    console.log(err);
-})
+
 
 
 
