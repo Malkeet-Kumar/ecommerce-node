@@ -111,13 +111,30 @@
                 <i class="fa fa-key icon"></i>
                 <input class="input-field" type="password" placeholder="Password" name="password" id="password">
             </div>
+
+            <div id="error-message-mobile"></div>
+            <div class="input-container">
+                <i class="fa fa-key icon"></i>
+                <input class="input-field" type="tel" placeholder="9999999999" name="mobile" id="mobile">
+            </div>
+
+            <div class="input-container">
+                <input type="radio" id="male" name="gender" value="M">
+                <label for="male">Male</label>
+            </div>
+
+            <div class="input-container">
+                <input type="radio" id="female" name="gender" value="F">
+                <label for="female">Female</label>
+            </div>
+
             <% if (err) { %>
                 <p style="margin: 15px 0; color: red; font-weight: bold; word-wrap: break-word;">
                     <%= err %>
                 </p>
-                <% } %>
-                    <button type="submit" class="btn">Register</button>
-                    <p style="margin-top: 15px;">Registered ? <a class="spanAnchor" href="/login">Login here</a></p>
+            <% } %>
+            <button type="submit" class="btn">Register</button>
+            <p style="margin-top: 15px;">Registered ? <a class="spanAnchor" href="/login">Login here</a></p>
         </form>
     </div>
 </body>
@@ -137,12 +154,12 @@
             validationMessage.style.color = 'red';
         }
     })
-    
-    document.getElementById("password").addEventListener('keyup',(e)=>{
+
+    document.getElementById("password").addEventListener('keyup', (e) => {
         const password = document.getElementById("password").value.trim()
         const password_regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/
         const validationMessage = document.getElementById("error-message-password");
-        
+
         if (password_regex.test(password)) {
             // Valid email address
             validationMessage.textContent = 'Strong Password';
@@ -153,12 +170,28 @@
             validationMessage.style.color = 'red';
         }
     })
-    
+
+    document.getElementById("mobile").addEventListener('keyup', (e) => {
+        const mobile = document.getElementById("mobile").value.trim()
+        const validationMessage = document.getElementById("error-message-mobile");
+
+        if (mobile.length>=10 && parseInt(mobile)) {
+            // Valid email address
+            validationMessage.textContent = 'valid mobile number';
+            validationMessage.style.color = 'green';
+        } else {
+            // Invalid email address
+            validationMessage.textContent = 'invalid mobile number';
+            validationMessage.style.color = 'red';
+        }
+    })
+
 
     document.getElementById("signup-form").addEventListener('submit', (e) => {
         const username = document.getElementById("username").value.trim()
         const email = document.getElementById("email").value.trim()
         const password = document.getElementById("password").value.trim()
+        const mobile = document.getElementById("mobile").value.trim()
         let err = ""
         if (username.length < 5) {
             e.preventDefault();
@@ -166,7 +199,7 @@
             alert(err)
             return false;
         }
-        if(email.length<8){
+        if (email.length < 8) {
             e.preventDefault()
             alert("A valid email is required")
         }
@@ -180,6 +213,11 @@
                 5. A special letter
                 6. Spaces are not allowed`
             alert(err)
+            return false;
+        }
+        if(mobile.length<10){
+            e.preventDefault();
+            alert("Mobile number is required");
             return false;
         }
         return true;

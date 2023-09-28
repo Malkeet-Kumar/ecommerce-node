@@ -2,38 +2,39 @@ const Product = require('../models/products.js')
 const User = require('../models/users.js')
 const Cart = require('../models/cart.js')
 const sendMail = require("../utils/email.js")
+const {v4:uuid} = require('uuid')
 const {createToken,verifyToken} = require('../utils/tokenGenerator.js')
-const email = require('../utils/email.js')
-const {findUser,updateUser, findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart} = require('../utils/dbqueries.js')
-
+const {findUser,updateUser, findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, createUserAccount, resetPassword, addItemToCart} = require('../utils/dbqueries.js')
+console.log(uuid());
 function createUser(req,res){
-    const {username, email, password} = req.body
+    const {username, email, password, gender, mobile} = req.body
     const user = {
+        id: uuid(),
         name: username,
         email: email,
         password: password,
-        isVerified: false,
-        role: "user"
+        gender:gender,
+        mobile:mobile,
     }
-    findUser({email:email},(err,result)=>{
-        if(!err){
-            User.create(user)
-            .then((u)=>{
-                console.log(u);
-                const msg = `<h2>Hello ${username},</h2>
-                <h2>Greetings from WOW BAZZAR,</h2>
-                <p>You have just registered on Wow Bazzar.</p>
-                <p><a href="http://127.0.0.1:8000/verify/email/${createToken(email,u._id)}">Click here</a> to verify your account, and to proceed further.</p>`;
-                sendMail(email,username,msg,"Email verification");
-                res.send(`<h1>An email has been sent to this email. Please open your mailbox and click on verify to proceed further</h1>`);
-            })
-            .catch(err=>{
-                console.log(err);
-                res.status(404).send("Something went wrong !")
-            })
-        } else{
+    findUser({email:email})
+    .then(result=>{
+        if(result.length>0){
             res.render("user/signup",{err:"This email already exists. Please try another one. Or go back to login."})
+            return
         }
+        createUserAccount(user)
+        .then(response=>{
+            console.log(response);
+            const msg = `<h2>Hello ${user.name},</h2>
+            <h2>Greetings from WOW BAZZAR,</h2>
+            <p>You have just registered on Wow Bazzar.</p>
+            <p><a href="http://127.0.0.1:8000/verify/email/${createToken(user.email,user.id)}">Click here</a> to verify your account, and to proceed further.</p>`;
+            sendMail(user.email,user.name,msg,"Email verification");
+            res.send(`<h1>An email has been sent to this email. Please open your mailbox and click on verify to proceed further</h1>`);
+        })
+    })
+    .catch(err=>{
+        console.log(err);
     })
 }
 
@@ -56,18 +57,20 @@ function changepassword(req,res){
     }
     const curr_password = req.body.current_password
     const new_password = req.body.new_password
-
-    findUserAndUpdate({_id:req.session.userId, password:curr_password, role:"user", isVerified:true},{password:new_password},(err,updated)=>{
-        if(updated){
-            res.status(200).send("pass updated successfully !")
-            const msg =`
-                <h1>Hi, ${u.name}</h1>
-                <p>You account Password has been updated succesfully.<br>Thank You</p>`
-            sendMail(u.email,u.name,msg,"Password Updated");
-        } else {
-            res.status(404).send("Something went wrong !");
-        }
+    
+    findUserAndUpdate({id:req.session.userId,old_password:curr_password,new_password:new_password})
+    .then(result=>{
+        console.log(result);
     })
+    .catch(err=>{
+        console.log(err);
+    })
+
+    // res.status(200).send("pass updated successfully !")
+    // const msg =`
+    //     <h1>Hi, ${u.name}</h1>
+    //     <p>You account Password has been updated succesfully.<br>Thank You</p>`
+    // sendMail(u.email,u.name,msg,"Password Updated");
 }
 
 function resetpassword(req,res){
@@ -78,18 +81,18 @@ function resetpassword(req,res){
         if(err){
             res.send("Invalid Token")
         } else {
-            findUserAndUpdate({_id:data.data.id},{password:new_password},(err,updatedUser)=>{
-                if(err){
-                    console.log(err);
-                    res.status(400).send("Not found");
-                } else {
-                    const msg =`
-                    <h1>Hi, ${updatedUser.name}</h1>
-                    <p>You account Password has been Resetted succesfully.<br>Thank You</p>`
-                    sendMail(updatedUser.email,updatedUser.name,msg,"Password Resetted");
-                    res.status(200).send("Password Resetted Successfully !")
-                }
+            resetPassword({id:data.data.id, new_password:new_password})
+            .then(result=>{
+                console.log(result);
             })
+            .catch(err=>{
+                console.log(err);
+            })
+            // const msg =`
+            // <h1>Hi, ${updatedUser.name}</h1>
+            // <p>You account Password has been Resetted succesfully.<br>Thank You</p>`
+            // sendMail(updatedUser.email,updatedUser.name,msg,"Password Resetted");
+            // res.status(200).send("Password Resetted Successfully !")
         }
     })
 }
@@ -102,20 +105,22 @@ function verifyEmail(req,res){
             res.status(404).send("Invalid token");
         } else {
             console.log(data.data.email)
-            findUser({email:data.data.email,_id:data.data.id},(err,user)=>{
-                if(err){
-                    res.status(500).send('Internal server error')
-                } else {
-                    updateUser({_id:user._id,role:"user"},{isVerified:true},(verified)=>{
-                        if(verified){
-                            setSession(req,user)
-                            res.redirect("/home");
-                        } else{
-                            res.status(404).send("not found")
-                        }
-                    })
-                } 
-            })
+            findUser({email:data.data.email})
+            .then((result) => {
+                if(result.length<=0){
+                    res.status(404).send("User Not Found !");
+                }
+                updateUser({id:data.data.id})
+                .then(d=>{
+                    if(d.changedRows>0){
+                        console.log(result);
+                        res.send("Email verified successfully");
+                    }
+                })
+            }).catch((err) => {
+                console.log(err);
+                res.status(500).send(err)
+            });
         }
     })
 }
@@ -141,13 +146,23 @@ function loginUser(req,res){
     const username = req.body.email
     const password = req.body.password
     console.log(username,password);
-    findUser({ password: password, email: username, role:"user"},(err,user)=>{
-        if(err){
-            res.render("user/login",{err: "Invalid Email or Password"});
+    findUser({email: username})
+    .then(result=>{
+        if(result.length>0){
+            if(result[0].password==password && result[0].role=="user"){
+                setSession(req,result[0]);
+                res.redirect("/home")
+            } else {
+                res.render("user/login",{err: "Invalid Email or Password"});
+            }
         } else {
-            setSession(req,user);
-            res.redirect("/home")
+            res.render("user/login",{err: "Invalid Email or Password"});
         }
+        console.log(result);
+    })
+    .catch(err=>{
+        console.log(err);
+        res.status(500).send("Internal server error")
     })
 }
 
@@ -174,31 +189,21 @@ function addToCart(req, res) {
         return;
     }
 
-    findCart({ itemId: item, userId: req.session.userId },(err,cart)=>{
-        if(cart){
-            res.status(403).send("Already added");
-        } else {
-            findProduct({_id:item},(err,p)=>{
-                if(err){
-                    res.status(404).send("Product not found");
-                } else {
-                    const cart = {
-                        userId: req.session.userId,
-                        itemId: item,
-                        quantity: 1,                        
-                    };
-                    Cart.create(cart)
-                    .then(() => {
-                        res.status(200).send("Item added to cart");
-                    })
-                    .catch(err=>{
-                        console.log(err);
-                        res.status(404).send("Not Found");
-                    })
-                }
+    findCart({pid: item,uid: req.session.userId})
+    .then((result) => {
+        if(result.length>0){
+            updateCart({pid:item,uid:req.session.userId,quantity:result[0].order_quantity+1})
+            .then(p=>{
+                res.send(p)
             })
+        } else{
+            addItemToCart({pid:item,uid:req.session.userId,quantity:1})
+            res.send(result);
         }
-    })
+    }).catch((err) => {
+        console.log(err);
+        res.send(err);
+    });
 }
 
 
@@ -207,13 +212,17 @@ function loadMyCart(req,res){
     if(!req.session.isLoggedIn){
         res.redirect("/login")
     } else {
-        getAllCarts({userId: req.session.userId},(err,carts)=>{
-            if(err){
-                res.send("Cart is empty")
+        getAllCarts({uid:req.session.userId})
+        .then((result) => {
+            if(result.length>0){
+                console.log(result);
             } else {
-                res.status(200).json(carts)
+                res.json([]);
             }
-        })
+        }).catch((err) => {
+            console.log(err);
+            res.send(err);
+        });
     }
 }
 
@@ -273,7 +282,7 @@ function sendPasswordResetMail(req,res){
 function setSession(req,user){
     req.session.isLoggedIn = true
     req.session.user = true
-    req.session.userId = user._id
+    req.session.userId = user.id
     req.session.name = user.name
     req.session.email = user.email
 }

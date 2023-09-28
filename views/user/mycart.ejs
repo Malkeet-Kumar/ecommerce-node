@@ -182,139 +182,141 @@
 <script>
     const container = document.getElementById("content-div")
 
-    let itemBatch = 1;
+    // let itemBatch = 1;
     var loadedProducts = [];
-    function fetcProducts(itembatch) {
+    function fetcProducts() {
         fetch("/mycart")
-            .then(p => p.json())
-            .then(products => {
-                if (products.length <= 0) {
-                    if (!container.hasChildNodes()) {
-                        const emptyMessage = document.createElement("h1");
-                        emptyMessage.innerText = "Cart is empty !";
-                        container.appendChild(emptyMessage);
-                    }
+        .then(p => p.json())
+        .then(products => {
+            console.log(products);
+            if (products.length <= 0) {
+                if (!container.hasChildNodes()) {
+                    const emptyMessage = document.createElement("h1");
+                    emptyMessage.innerText = "Cart is empty !";
+                    container.appendChild(emptyMessage);
                 }
-                products.forEach(element => {
-                    let itemQuantity = element.quantity;
-                    loadedProducts.push(element);
-                    const p_item = document.createElement("div")
-                    p_item.className = "product-item"
+            }
+            console.log(products);
+            products.forEach(element => {
+                let itemQuantity = element.quantity;
+                loadedProducts.push(element);
+                const p_item = document.createElement("div")
+                p_item.className = "product-item"
 
-                    p_item.innerHTML = `
-                        <div class="product-image"><img class="p-image" src="${(element.itemId.image.endsWith(".jpg") || element.itemId.image.endsWith(".png"))?element.itemId.image : "/uploads/"+element.itemId.image}" alt="kdjskjs"></div>
-                        <div class="product-title">${element.itemId.productName}</div>
-                        <div class="product-price">${element.itemId.price} $</div>`;
+                p_item.innerHTML = `
+                    <div class="product-image"><img class="p-image" src="${(element.itemId.image.endsWith(".jpg") || element.itemId.image.endsWith(".png"))?element.itemId.image : "/uploads/"+element.itemId.image}" alt="kdjskjs"></div>
+                    <div class="product-title">${element.itemId.productName}</div>
+                    <div class="product-price">${element.itemId.price} $</div>`;
 
-                    const productQuantityDiv = document.createElement("div");
-                    productQuantityDiv.className = "product-quantity";
+                const productQuantityDiv = document.createElement("div");
+                productQuantityDiv.className = "product-quantity";
 
-                    const quant = document.createElement("p");
-                    quant.id = "order-quantity";
-                    quant.innerText = "Quantity : "+element.quantity
+                const quant = document.createElement("p");
+                quant.id = "order-quantity";
+                quant.innerText = "Quantity : "+element.quantity
 
-                    const quanIncre = document.createElement("button");
-                    quanIncre.className = "quanBtn";
-                    quanIncre.innerText = "+"
-                    quanIncre.addEventListener('click', (e) => {
-                        if (itemQuantity >= element.itemId.quantity) {
-                            alert("you have reached the maximum stock limit.")
-                            return false
-                        }
-                        itemQuantity++;
-                        fetch("/cart/" + element._id, {
-                            method: "PATCH",
-                            headers: {
-                                "Content-Type": "Application/Json",
-                            },
-                            body: JSON.stringify({
-                                quantity: itemQuantity
-                            })
-                        })
-                        .then(res =>res.json())
-                        .then(res=>{
-                            if(res)
-                                quant.innerText = "Quantity : " + res.quantity                            
-                        })
-                        .catch(err => {
-                            console.log(err);
-                            alert("Something went wrong !");
+                const quanIncre = document.createElement("button");
+                quanIncre.className = "quanBtn";
+                quanIncre.innerText = "+"
+                quanIncre.addEventListener('click', (e) => {
+                    if (itemQuantity >= element.itemId.quantity) {
+                        alert("you have reached the maximum stock limit.")
+                        return false
+                    }
+                    itemQuantity++;
+                    fetch("/cart/" + element._id, {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "Application/Json",
+                        },
+                        body: JSON.stringify({
+                            quantity: itemQuantity
                         })
                     })
-
-                    const quanDecre = document.createElement("button");
-                    quanDecre.className = "quanBtn";
-                    quanDecre.innerText = "-"
-                    quanDecre.addEventListener('click', (e) => {
-                        if (itemQuantity == 1) {
-                            alert("You need minimum 1 quantity to place the order !")
-                            return false;
-                        }
-                        itemQuantity--;
-                        fetch("/cart/" + element._id, {
-                            method: "PATCH",
-                            headers: {
-                                "Content-Type": "Application/Json",
-                            },
-                            body: JSON.stringify({ quantity: itemQuantity })
-                        })
-                        .then(res =>res.json())
-                        .then(res=>{
-                            if(res)
-                                quant.innerText = "Quantity : " + res.quantity                            
-                        })
-                        .catch(err => {
-                            console.log(err);
-                            alert("Something went wrong !");
-                        })
+                    .then(res =>res.json())
+                    .then(res=>{
+                        if(res)
+                            quant.innerText = "Quantity : " + res.quantity                            
                     })
+                    .catch(err => {
+                        console.log(err);
+                        alert("Something went wrong !");
+                    })
+                })
 
-                    productQuantityDiv.appendChild(quant)
-                    productQuantityDiv.appendChild(quanIncre)
-                    productQuantityDiv.appendChild(quanDecre)
+                const quanDecre = document.createElement("button");
+                quanDecre.className = "quanBtn";
+                quanDecre.innerText = "-"
+                quanDecre.addEventListener('click', (e) => {
+                    if (itemQuantity == 1) {
+                        alert("You need minimum 1 quantity to place the order !")
+                        return false;
+                    }
+                    itemQuantity--;
+                    fetch("/cart/" + element._id, {
+                        method: "PATCH",
+                        headers: {
+                            "Content-Type": "Application/Json",
+                        },
+                        body: JSON.stringify({ quantity: itemQuantity })
+                    })
+                    .then(res =>res.json())
+                    .then(res=>{
+                        if(res)
+                            quant.innerText = "Quantity : " + res.quantity                            
+                    })
+                    .catch(err => {
+                        console.log(err);
+                        alert("Something went wrong !");
+                    })
+                })
 
-                    const actionDiv = document.createElement("div");
-                    actionDiv.className = "product-actions";
+                productQuantityDiv.appendChild(quant)
+                productQuantityDiv.appendChild(quanIncre)
+                productQuantityDiv.appendChild(quanDecre)
 
-                    const deleteCart = document.createElement("button");
+                const actionDiv = document.createElement("div");
+                actionDiv.className = "product-actions";
 
-                    deleteCart.className = "actionBtn-deleteCart";
-                    deleteCart.id = element._id;
-                    deleteCart.innerText = "Delete";
+                const deleteCart = document.createElement("button");
 
-                    deleteCart.addEventListener('click', e => {
-                        fetch("/cart/" + element._id, { method: "delete" })
-                            .then(res => {
-                                if (res.status) {
-                                    p_item.remove()
-                                    if (!container.hasChildNodes()) {
-                                        const emptyMessage = document.createElement("h1");
-                                        emptyMessage.innerText = "Cart is empty !";
-                                        container.appendChild(emptyMessage);
-                                    }
+                deleteCart.className = "actionBtn-deleteCart";
+                deleteCart.id = element._id;
+                deleteCart.innerText = "Delete";
+
+                deleteCart.addEventListener('click', e => {
+                    fetch("/cart/" + element._id, { method: "delete" })
+                        .then(res => {
+                            if (res.status) {
+                                p_item.remove()
+                                if (!container.hasChildNodes()) {
+                                    const emptyMessage = document.createElement("h1");
+                                    emptyMessage.innerText = "Cart is empty !";
+                                    container.appendChild(emptyMessage);
                                 }
-                            })
-                            .catch(err => console.log(err))
-                    })
+                            }
+                        })
+                        .catch(err => console.log(err))
+                })
 
 
-                    const viewDescBtn = document.createElement("button");
-                    viewDescBtn.className = "actionBtn-viewdesc";
-                    viewDescBtn.id = element._id;
-                    viewDescBtn.innerText = "View Desc"
+                const viewDescBtn = document.createElement("button");
+                viewDescBtn.className = "actionBtn-viewdesc";
+                viewDescBtn.id = element._id;
+                viewDescBtn.innerText = "View Desc"
 
-                    viewDescBtn.addEventListener('click', e => {
-                        viewDesc(element);
-                    })
+                viewDescBtn.addEventListener('click', e => {
+                    viewDesc(element);
+                })
 
-                    actionDiv.appendChild(deleteCart);
-                    actionDiv.appendChild(viewDescBtn);
-                    p_item.appendChild(productQuantityDiv);
-                    p_item.appendChild(actionDiv);
+                actionDiv.appendChild(deleteCart);
+                actionDiv.appendChild(viewDescBtn);
+                p_item.appendChild(productQuantityDiv);
+                p_item.appendChild(actionDiv);
 
-                    container.appendChild(p_item);
-                });
-            })
+                container.appendChild(p_item);
+            });
+        })
     }
 
     fetcProducts();

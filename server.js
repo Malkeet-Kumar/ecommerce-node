@@ -1,14 +1,17 @@
 require('dotenv').config()
 const express = require('express')
 const session = require('express-session')
+const {signUpUser} = require('./utils/dbqueries')
 const db = require("./models/db")
-// const p = require("./contollers/products")
-// const ex = require("./mongoexample")
 const multer = require('multer')
 const upload = multer({dest :__dirname+"/public/uploads"});
 const app = express()
 
 app.set('view engine', 'ejs');
+app.use("/",(req,res,next)=>{
+    console.log(req.path);
+    next();
+})
 app.use(upload.single('product_image'));
 app.use(express.json())
 app.use(express.urlencoded({extended:true}))
@@ -31,6 +34,7 @@ app.use("/p",ProductRoutes)
 db.connect(err=>{
     if(err){
         console.log("Error can not connect to database ! ",err);
+        return
     }
     console.log("Connected to database ");
     app.listen(process.env.PORT,()=>{

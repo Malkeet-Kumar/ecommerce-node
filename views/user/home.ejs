@@ -170,7 +170,7 @@
 
                     p_item.innerHTML = `
                         <div class="product-image"><img class="p-image" src="${element.image.endsWith(".jpg") || element.image.endsWith(".png")?element.image:"/uploads/"+element.image}" alt="kdjskjs"></div>
-                        <div class="product-title">${element.productName}</div>
+                        <div class="product-title">${element.name}</div>
                         <div class="product-price">$ ${element.price}</div>`;
                     
                     const  actionDiv = document.createElement("div");
@@ -179,11 +179,11 @@
                     const addToCartBtn = document.createElement("button");
 
                     addToCartBtn.className = "actionBtn-addtocart";
-                    addToCartBtn.id = element._id;
+                    addToCartBtn.id = element.p_id;
                     addToCartBtn.innerText = "Add to Cart";
 
                     addToCartBtn.addEventListener('click',e=>{
-                        fetch("/cart/"+element._id,{method:"post",})
+                        fetch("/cart/"+element.p_id,{method:"post",})
                         .then(res=>{
                             // debugger;
                             console.log(res,"status ye diya hai");
@@ -201,7 +201,7 @@
                     
                     const viewDescBtn = document.createElement("button");
                     viewDescBtn.className = "actionBtn-viewdesc";
-                    viewDescBtn.id = element._id;
+                    viewDescBtn.id = element.p_id;
                     viewDescBtn.innerText = "View Desc"
 
                     viewDescBtn.addEventListener('click',e=>{
@@ -237,10 +237,10 @@
                 <div style="height: 100%; width: 100%; display: flex;">
                     <div class="product-image-p"><img class="p-image-p" src="${p.image.endsWith(".jpg") || p.image.endsWith(".png")?p.image:"/uploads/"+p.image}" alt="Product_image-p"></div>
                     <div class="product-info-p">
-                        <div class="product-info-item"><h3>${p.productName}</h3></div>
+                        <div class="product-info-item"><h3>${p.name}</h3></div>
                         <div class="product-info-item"><h2>Price : $ ${p.price}</h2></div>
                         <div class="product-info-item"><h3>Stock : ${p.quantity}</h3></div>
-                        <div class="product-info-item"><p>Description : ${p.desc}</p></div>
+                        <div class="product-info-item"><p>Description : ${p.description}</p></div>
                     </div>
             </div>`
             return p_details;

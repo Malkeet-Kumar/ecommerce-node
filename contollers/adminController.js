@@ -12,14 +12,22 @@ function loadLoginPage(req,res){
 
 function loginAdmin(req,res){
     console.log(req.path,req.body);
-    findUser({email:req.body.email, password:req.body.password,role:"admin"},(err,admin)=>{
-        if(err){
-            res.render("admin/login",{err:"Invalid Credentials"});
+    findUser({email:req.body.email})
+    .then((result) => {
+        if(result.length>0){
+            if(result[0].password==req.body.password && result[0].role=="admin"){
+                setSession(req,result[0])
+                res.redirect("/admin/dashboard");
+            } else {
+                res.render("admin/login",{err:"Invalid Credentials"});
+            }
         } else {
-            setSession(req,admin)
-            res.redirect("/admin/dashboard");
+            res.render("admin/login",{err:"Invalid Credentials"});
         }
-    })   
+    }).catch((err) => {
+        console.log(err);
+        res.send("Not found")
+    });  
 }
 
 function logout(req,res){
@@ -64,19 +72,23 @@ function editProduct(req,res){
     console.log(req.path);
     const p_id = req.params.id
     const product = {
-        productName: req.body.name,
-        desc: req.body.desc,
+        p_id:p_id,
+        name: req.body.name,
+        description: req.body.desc,
         price: req.body.price,
         quantity: req.body.quantity,
     }
-
-    updateProduct({_id:p_id},product,(err,data)=>{
-        if(err){
-            res.status(500).send("Internal sever error")
-        } else {
-            res.status(200).json(data)
+    updateProduct(product)
+    .then((result) => {
+        if(result[0].changedRows>0){
+            res.status(200).json(product);
+        } else{
+            res.status(404).send("Something went wrong");
         }
-    })
+    }).catch((err) => {
+        console.log(err);
+        res.status(500).send("Internal sever error")
+    });
 }
 
 function deleteProduct(req,res){
@@ -95,7 +107,7 @@ function setSession(req,user){
     req.session.isLoggedIn = true
     req.session.name = user.name
     req.session.email = user.email
-    req.session.userId = user._id
+    req.session.userId = user.id
     req.session.role = user.role
     req.session.isAdmin = true
 }

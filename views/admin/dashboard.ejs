@@ -167,7 +167,7 @@
     const form = document.getElementById("add-product-div")
     function createProductTile(product) {
         const pDiv = document.createElement("div");
-        pDiv.id = product._id;
+        pDiv.id = product.id;
         pDiv.className = 'product_item';
         pDiv.innerHTML =
             `<div class="p_image">
@@ -175,23 +175,23 @@
             </div>
             <div class="p_title">
             <div class="div-info">Title:</div> 
-            <input class="div-edtText" type="text" name="" id="name-${product._id}" value="${product.productName}"">
+            <input class="div-edtText" type="text" name="" id="name-${product.p_id}" value="${product.name}"">
             </div>
             <div class="p_price">
             <div class="div-info">Price:</div>
-            <input class="div-edtText" type="text" name="" id="price-${product._id}" value="${product.price}">
+            <input class="div-edtText" type="text" name="" id="price-${product.p_id}" value="${product.price}">
             </div>
             <div class="p_desc">
             <div class="div-info">Desc:</div> 
-            <input class="div-edtText" type="text" name="" id="desc-${product._id}" value="${product.desc}">
+            <input class="div-edtText" type="text" name="" id="desc-${product.p_id}" value="${product.description}">
             </div>
             <div class="p_quantity">
             <div class="div-info">Quantity:</div>
-            <input class="div-edtText" type="text" name="" id="quantity-${product._id}" value="${product.quantity}">
+            <input class="div-edtText" type="text" name="" id="quantity-${product.p_id}" value="${product.quantity}">
             </div>
             <div class="action-btn-div">
-            <button class="action-btn" id="updateBtn" onclick="updateProduct('${product._id}')">Update</button>
-            <button class="action-btn" id="deleteBtn" onclick="deleteProduct('${product._id}')">Delete</button>
+            <button class="action-btn" id="updateBtn" onclick="updateProduct('${product.p_id}')">Update</button>
+            <button class="action-btn" id="deleteBtn" onclick="deleteProduct('${product.p_id}')">Delete</button>
             </div>`
 
         return pDiv
@@ -295,7 +295,7 @@
         e.preventDefault()
         const name = document.getElementById("name").value.trim()
         const price = document.getElementById("price").value.trim()
-        const desc = document.getElementById("desc").value.trim()
+        const description = document.getElementById("desc").value.trim()
         const quantity = document.getElementById("quantity").value.trim()
         const image = document.getElementById("product_image").files[0];
         const formdata = new FormData(document.getElementById("newproduct"))
