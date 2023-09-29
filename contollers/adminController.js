@@ -1,6 +1,7 @@
 const Product = require('../models/products.js')
 const User = require('../models/users.js')
-const {findUser, updateProduct } = require('../utils/dbqueries.js')
+const {v4:uuid} = require('uuid')
+const {findUser, updateProduct, addProduct, deleteProductFromTable } = require('../utils/dbqueries.js')
 
 function loadLoginPage(req,res){
     if(req.session.isLoggedIn && req.session.isAdmin){
@@ -50,22 +51,24 @@ function addNewProduct(req,res){
         return
     }
     const product = {
-        productName: req.body.name,
-        desc: req.body.desc,
+        p_id:uuid(),
+        name: req.body.name,
+        description: req.body.desc,
         price: req.body.price,
         quantity: req.body.quantity,
         image: req.file.filename,
     }
 
-    Product.create(product)
-    .then(result=>{
+    addProduct(product)
+    .then((result) => {
         console.log(result);
-        res.json(result);
-    })
-    .catch(err=>{
+        if(result.affectedRows>0){
+            res.status(200).send(product)
+        }
+    }).catch((err) => {
         console.log(err);
-        res.send(err)
-    })
+        res.status(500).send("Internal server error")
+    });
 }
 
 function editProduct(req,res){
@@ -80,7 +83,7 @@ function editProduct(req,res){
     }
     updateProduct(product)
     .then((result) => {
-        if(result[0].changedRows>0){
+        if(result.changedRows>0){
             res.status(200).json(product);
         } else{
             res.status(404).send("Something went wrong");
@@ -93,14 +96,16 @@ function editProduct(req,res){
 
 function deleteProduct(req,res){
     const p_id = req.params.id
-    Product.deleteOne({_id:p_id})
-    .then(result=>{
-        res.status(200).send("success")
-    })    
-    .catch(err=>{
+    deleteProductFromTable({p_id:p_id})
+    .then((result) => {
+        console.log(result);
+        if(result.affectedRows>0){
+            res.status(200).send("success")
+        }
+    }).catch((err) => {
         console.log(err);
         res.status(500).send("Internal Server error");
-    })
+    });
 }
 
 function setSession(req,user){

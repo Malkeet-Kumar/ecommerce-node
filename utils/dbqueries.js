@@ -91,12 +91,12 @@ function findProduct(query,callback){
 
 function getAllCarts(query){
     return new Promise((resolve,reject)=>{
-        db.query(`select * from products cross join carts on products.p_id = carts.product_id where user_id= "${query.uid}";`,(err, pids)=>{
+        db.query(`select * from products cross join carts on products.p_id = carts.product_id where user_id= "${query.uid}";`,(err, cartItems)=>{
             if(err){
                 reject(err)
             }
-            console.log(pids);
-
+            console.log(cartItems);
+            resolve(cartItems)
         })
     })
 }
@@ -145,5 +145,26 @@ function updateCart(query){
     })
 }
 
+function addProduct(query){
+    return new Promise((resolve,reject)=>{
+        db.query(`insert into products values("${query.p_id}","${query.name}","${query.description}",${query.price},${query.quantity},"${query.image}")`,(err,res)=>{
+            if(err){
+                reject(err);
+            }
+            resolve(res);
+        })
+    })
+}
 
-module.exports = {addItemToCart,findUser, updateUser,findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, updateProduct, createUserAccount, resetPassword}
+function deleteProductFromTable(query){
+    return new Promise((resolve, reject)=>{
+        db.query(`delete from products where p_id="${query.p_id}"`,(err,res)=>{
+            if(err){
+                reject(err);
+            }
+            resolve(res);
+        })
+    })
+}
+
+module.exports = {addProduct,deleteCartItem,addItemToCart,findUser, updateUser,findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, updateProduct, createUserAccount, resetPassword, deleteProductFromTable}

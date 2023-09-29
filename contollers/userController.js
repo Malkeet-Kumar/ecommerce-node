@@ -4,7 +4,7 @@ const Cart = require('../models/cart.js')
 const sendMail = require("../utils/email.js")
 const {v4:uuid} = require('uuid')
 const {createToken,verifyToken} = require('../utils/tokenGenerator.js')
-const {findUser,updateUser, findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, createUserAccount, resetPassword, addItemToCart} = require('../utils/dbqueries.js')
+const {findUser,updateUser, findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, createUserAccount, resetPassword, addItemToCart, deleteCartItem} = require('../utils/dbqueries.js')
 console.log(uuid());
 function createUser(req,res){
     const {username, email, password, gender, mobile} = req.body
@@ -216,6 +216,7 @@ function loadMyCart(req,res){
         .then((result) => {
             if(result.length>0){
                 console.log(result);
+                res.json(result)
             } else {
                 res.json([]);
             }
@@ -231,12 +232,18 @@ function removeFromCart(req,res){
     if(!req.session.isLoggedIn){
         res.redirect("/login");
     } else {
-        Cart.deleteOne({_id: req.params.item})
+        deleteCartItem({uid:req.session.userId, pid:req.params.item})
         .then(result=>{
-            res.send({status:true})
+            console.log(result);
+            if(result.affectedRow>0){
+                res.status(200).send("deleted successfully")
+            } else {
+                res.status(404).send("something went wrong")
+            }
         })
         .catch(err=>{
-            res.send({status:false})
+            console.log(err);
+            res.status(500).send(err)
         })
     }
 }
@@ -254,13 +261,17 @@ function editItemQuantity(req,res){
     if(!req.session.isLoggedIn){
         res.redirect("/login")
     } else {
-        updateCart({_id:req.params.item},{quantity:req.body.quantity},(err,data)=>{
-            if(err){
-                res.status(500).send("Internal Server Error !")
-                return
+        updateCart({quantity:req.body.quantity, uid: req.session.userId, pid: req.params.item})
+        .then((result) => {
+            console.log(result);
+            if(result.changedRows>0){
+                res.status(200).json({quantity : req.body.quantity});
+            } else{
+                res.status(404).send("Something went wrong");
             }
-            res.status(200).json({quantity : data.quantity});
-        })
+        }).catch((err) => {
+            res.status(500).send("Internal Server Error !")
+        });
     }
 }
 

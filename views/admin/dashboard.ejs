@@ -167,7 +167,7 @@
     const form = document.getElementById("add-product-div")
     function createProductTile(product) {
         const pDiv = document.createElement("div");
-        pDiv.id = product.id;
+        pDiv.id = product.p_id;
         pDiv.className = 'product_item';
         pDiv.innerHTML =
             `<div class="p_image">
@@ -201,18 +201,20 @@
         fetch("/admin/products/" + id, {
             method: "DELETE"
         })
-            .then(res => {
-                if (res.status == 200) {
-                    document.getElementById(id).remove();
-                    alert("Product deleted Successfully !");
-                } else {
-                    alert("Something went wrong !");
-                }
-            })
-            .catch(err => {
-                console.log(err);
+        .then(res => {
+            // console.log(res.ok);
+            // console.log(document.getElementById(`"${id}"`),"element");
+            if (res.status==200) {
+                document.getElementById(id).remove();
+                alert("Product deleted Successfully !");
+            } else {
                 alert("Something went wrong !");
-            })
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            alert("Something went wrong !");
+        })
     }
 
     function updateProduct(id) {
@@ -336,30 +338,34 @@
             alert("Image is too big ! image should not exceed 250kb")
             return false
         }
-
         fetch("/admin/products", {
             method: "POST",
             body: formdata
         })
-            .then(res => {
-                if (res.status == 200) {
-                    alert("Product added successfully !")
-                    parent.style.display = "grid"
-                    form.style.display = "none";
-                    document.getElementById("loadMore").style.display = "block"
-                    document.getElementById("addproduct").innerText = "Add Product"
-                    return res.json()
-                } else {
-                    alert("Something went wrong !")
-                }
-            })
-            .then(res => {
-                parent.prepend(createProductTile(res));
-            })
-            .catch(err => {
-                console.log(err);
-                console.log("Something went wrong !");
-            })
+        .then(res => {
+            if (res.status == 200) {
+                alert("Product added successfully !")
+                parent.style.display = "grid"
+                form.style.display = "none";
+                document.getElementById("loadMore").style.display = "block"
+                document.getElementById("addproduct").innerText = "Add Product"
+                document.getElementById("name").value = ""
+                document.getElementById("price").value = ""
+                document.getElementById("desc").value = ""
+                document.getElementById("quantity").value = ""
+                document.getElementById("product_image").value = ""
+                return res.json()
+            } else {
+                alert("Something went wrong !")
+            }
+        })
+        .then(res => {
+            parent.prepend(createProductTile(res));
+        })
+        .catch(err => {
+            console.log(err);
+            console.log("Something went wrong !");
+        })
     })
 </script>
 

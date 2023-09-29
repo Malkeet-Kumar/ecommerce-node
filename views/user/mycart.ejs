@@ -188,7 +188,6 @@
         fetch("/mycart")
         .then(p => p.json())
         .then(products => {
-            console.log(products);
             if (products.length <= 0) {
                 if (!container.hasChildNodes()) {
                     const emptyMessage = document.createElement("h1");
@@ -196,35 +195,35 @@
                     container.appendChild(emptyMessage);
                 }
             }
-            console.log(products);
             products.forEach(element => {
-                let itemQuantity = element.quantity;
+                console.log(element);
+                let itemQuantity = element.order_quantity;
                 loadedProducts.push(element);
                 const p_item = document.createElement("div")
                 p_item.className = "product-item"
 
                 p_item.innerHTML = `
-                    <div class="product-image"><img class="p-image" src="${(element.itemId.image.endsWith(".jpg") || element.itemId.image.endsWith(".png"))?element.itemId.image : "/uploads/"+element.itemId.image}" alt="kdjskjs"></div>
-                    <div class="product-title">${element.itemId.productName}</div>
-                    <div class="product-price">${element.itemId.price} $</div>`;
+                    <div class="product-image"><img class="p-image" src="${element.image}" alt="${element.name}"></div>
+                    <div class="product-title">${element.name}</div>
+                    <div class="product-price">${element.price} $</div>`;
 
                 const productQuantityDiv = document.createElement("div");
                 productQuantityDiv.className = "product-quantity";
 
                 const quant = document.createElement("p");
                 quant.id = "order-quantity";
-                quant.innerText = "Quantity : "+element.quantity
+                quant.innerText = "Quantity : "+element.order_quantity
 
                 const quanIncre = document.createElement("button");
                 quanIncre.className = "quanBtn";
                 quanIncre.innerText = "+"
                 quanIncre.addEventListener('click', (e) => {
-                    if (itemQuantity >= element.itemId.quantity) {
+                    if (itemQuantity >= element.quantity) {
                         alert("you have reached the maximum stock limit.")
                         return false
                     }
                     itemQuantity++;
-                    fetch("/cart/" + element._id, {
+                    fetch("/cart/" + element.p_id, {
                         method: "PATCH",
                         headers: {
                             "Content-Type": "Application/Json",
@@ -253,7 +252,7 @@
                         return false;
                     }
                     itemQuantity--;
-                    fetch("/cart/" + element._id, {
+                    fetch("/cart/" + element.p_id, {
                         method: "PATCH",
                         headers: {
                             "Content-Type": "Application/Json",
@@ -281,11 +280,11 @@
                 const deleteCart = document.createElement("button");
 
                 deleteCart.className = "actionBtn-deleteCart";
-                deleteCart.id = element._id;
+                deleteCart.id = element.p_id;
                 deleteCart.innerText = "Delete";
 
                 deleteCart.addEventListener('click', e => {
-                    fetch("/cart/" + element._id, { method: "delete" })
+                    fetch("/cart/" + element.p_id, { method: "delete" })
                         .then(res => {
                             if (res.status) {
                                 p_item.remove()
@@ -328,12 +327,12 @@
         p_details.innerHTML = `
         <div class="close" id="popUpDesc" onclick="closePopUpDesc()"><button onclick = "closePopUpDesc()">&times;</button></div>
             <div style="height: 100%; width: 100%; display: flex;">
-                <div class="product-image-p"><img class="p-image-p" src="${(p.itemId.image.endsWith(".jpg") || p.itemId.image.endsWith(".png"))?p.itemId.image : "/uploads/"+p.itemId.image}" alt="Product_image-p"></div>
+                <div class="product-image-p"><img class="p-image-p" src="${p.image}" alt="${p.name}"></div>
                 <div class="product-info-p">
-                    <div class="product-name-p"><h3>${p.itemId.productName}</h3></div>
-                    <div class="product-price-p"><h2>Price : ${p.itemId.price} $</h2></div>
-                    <div class="product-stock-p"><h3>Stock : ${p.itemId.quantity}</h3></div>
-                    <div class="product-desc-p"><p>Description : ${p.itemId.desc}</p></div>
+                    <div class="product-name-p"><h3>${p.name}</h3></div>
+                    <div class="product-price-p"><h2>Price : ${p.price} $</h2></div>
+                    <div class="product-stock-p"><h3>Stock : ${p.quantity}</h3></div>
+                    <div class="product-desc-p"><p>Description : ${p.description}</p></div>
                 </div>
         </div>`
         return p_details;

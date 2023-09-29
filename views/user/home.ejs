@@ -169,7 +169,7 @@
                     p_item.className = "product-item"
 
                     p_item.innerHTML = `
-                        <div class="product-image"><img class="p-image" src="${element.image.endsWith(".jpg") || element.image.endsWith(".png")?element.image:"/uploads/"+element.image}" alt="kdjskjs"></div>
+                        <div class="product-image"><img class="p-image" src="${element.image.endsWith(".jpg") || element.image.endsWith(".png")?element.image:"/uploads/"+element.image}" alt="${element.name}"></div>
                         <div class="product-title">${element.name}</div>
                         <div class="product-price">$ ${element.price}</div>`;
                     
