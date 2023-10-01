@@ -1,11 +1,9 @@
-const Cart = require('../models/cart');
-const User = require('../models/users')
 const Product = require('../models/products')
 const db = require('../models/db');
 
 function findUser(query){
     return new Promise((resolve, reject)=>{
-        db.query(`select * from ecom_users where email="${query.email}"`,(err,res)=>{
+        db.query(`select * from ${query.table} where email="${query.email}"`,(err,res)=>{
             if(err){
                 reject(err);
             } 
@@ -16,7 +14,10 @@ function findUser(query){
 
 function createUserAccount(user){
     return new Promise((resolve, reject)=>{
-        db.query(`insert into ecom_users (id, name, email, password, gender, mobile, isVerified, role) values ("${user.id}","${user.name}","${user.email}","${user.password}","${user.gender}","${user.mobile}",false,"user")`,(err,res)=>{
+        db.query(`insert into ecom_users values ("${user.id}","${user.name}",
+        "${user.email}","${user.gender}","${user.mobile}",
+        false,"user",,"${user.password}")`,
+        (err,res)=>{
             if(err){
                 reject(err);
             }
@@ -25,9 +26,23 @@ function createUserAccount(user){
     })
 }
 
+function createSellerAccount(seller, files){
+    return new Promise((resolve, reject)=>{
+        db.query(`insert into sellers values("${seller.id}","${seller.fname}","${seller.lname}","${seller.gender}",
+        "${seller.email}","${seller.mobile}","${seller.dob}","${seller.buisnessName}","${seller.buisnessAddress}",
+        "${seller.aadharNumber}","${seller.panNumber}","${seller.gstNumber}","${files[1].filename}",
+        "${files[2].filename}","${files[3].filename}","${files[0].filename}",false, false, "seller",${seller.password})`,(err,res)=>{
+            if(err){
+                reject(err);
+            }
+            resolve(res);
+        });
+    })
+}
+
 function updateUser(query){
     return new Promise((resolve, reject)=>{
-        db.query(`update ecom_users set isVerified= true where id = "${query.id}"`, (err,data)=>{
+        db.query(`update ${query.table} set ${query.modField} = true where ${query.queField} = "${query.id}"`, (err,data)=>{
             if(err){
                 reject(err);
             }
@@ -39,7 +54,7 @@ function updateUser(query){
 function findUserAndUpdate(query){
 
     return new Promise((resolve,reject)=>{
-        db.query(`select password from ecom_users where id = "${query.id}"`,(err,res)=>{
+        db.query(`select password from ${query.table} where ${query.field} = "${query.id}"`,(err,res)=>{
             if(err){
                 reject(err);
             }
@@ -59,7 +74,7 @@ function findUserAndUpdate(query){
 
 function resetPassword(query){
     return new Promise((resolve, reject)=>{
-        db.query(`update ecom_users set password = "${query.new_password} where id = "${query.id}"`,(err,result)=>{
+        db.query(`update ${query.table} set password = "${query.new_password}" where ${query.field} = "${query.id}"`,(err,result)=>{
             if(err){
                 reject(err);
             }
@@ -125,7 +140,7 @@ function updateProduct(query){
 
 function addItemToCart(query){
     return new Promise((resolve,reject)=>{
-        db.query(`insert into carts values("${query.pid}","${query.uid}","${query.quantity}")`,(err,res)=>{
+        db.query(`insert into carts(product_id,user_id,order_quantity) values("${query.pid}","${query.uid}","${query.quantity}")`,(err,res)=>{
             if(err){
                 reject(err)
             }
@@ -167,4 +182,4 @@ function deleteProductFromTable(query){
     })
 }
 
-module.exports = {addProduct,deleteCartItem,addItemToCart,findUser, updateUser,findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, updateProduct, createUserAccount, resetPassword, deleteProductFromTable}
+module.exports = {createSellerAccount,addProduct,deleteCartItem,addItemToCart,findUser, updateUser,findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, updateProduct, createUserAccount, resetPassword, deleteProductFromTable}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password</title>
+    <title>Login || Signup</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <style>
         *{
@@ -95,65 +95,46 @@
 
     </div>
     <div class="login-div">
-        <form class="login-signup-form" id="change-password-form">
-            <h3 style="text-align: center; margin-bottom: 15px;">Reset Password</h3 style="text-align: center;">
-        
+        <form action="seller/login" method="post" class="login-signup-form" id="login-form">
+            <h3 style="text-align: center; margin-bottom: 15px;">Login</h3 style="text-align: center;">
+          
             <div class="input-container">
-              <i class="fa fa-key icon"></i>
-              <input class="input-field" type="password" placeholder="New password" name="new_password" id="new_password">
+              <i class="fa fa-envelope icon"></i>
+              <input class="input-field" type="text" placeholder="Email" name="email" id="email">
             </div>
+          
             <div class="input-container">
               <i class="fa fa-key icon"></i>
-              <input class="input-field" type="password" placeholder="Confirm password" name="confirm_password" id="confirm_password">
+              <input class="input-field" type="password" placeholder="Password" name="password" id="password">
             </div>
             <% if (err) { %>
                 <p style="color: red; font-weight: bold;"><%= err %></p>
             <% } %>
-            <button type="submit" class="btn">Change Password</button>
-
+            <button type="submit" class="btn">Login</button>
+            <p style="margin-top: 15px;"><a class="spanAnchor" href="/forgotpassword">Forgot Password</a></p>
+            <p style="margin-top: 15px;">New , <a class="spanAnchor" href="signup">SignUp here</a></p>
           </form>
     </div>
 </body>
 <script>
-   document.getElementById("change-password-form").addEventListener('submit',(e)=>{
-       e.preventDefault()
-       const new_password = document.getElementById("new_password").value.trim()
-       const con_password = document.getElementById("confirm_password").value.trim()
+   document.getElementById("login-form").addEventListener('submit',(e)=>{
+       const email =  document.getElementById("email").value.trim()
+       const password = document.getElementById("password").value.trim()
        let err = ""
-        if(new_password.length<8){
+       if(email.length<5){
+           e.preventDefault()
+           err+="email is required\n"
+           alert(err)
+           return false
+        }
+        if(password.length<8){
+            e.preventDefault()
             err+="Password is required and must have at least 8 charaters"
             alert(err)
             return false
         }
-        if(con_password!=new_password){
-            err+="Verify password did'nt mathced"
-            alert(err)
-            return false
-        }
         if(err==""){
-            const url = new URL(window.location.href).pathname
-            fetch(url, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    "new_password": new_password
-                })
-            })
-            .then(res => {
-                if(res.status==303){
-                    alert("Password resetted successfully !")                    
-                } else if(res.status==401){
-                    alert("Token is inavalid or Expired !")
-                }
-                console.log(res);
-            })
-            .catch(err => {
-                alert("Somthing went wrong !")
-                console.log(err);
-            });
-
+            return true;
         }
     }) 
 </script>

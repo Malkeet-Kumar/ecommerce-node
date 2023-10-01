@@ -1,19 +1,37 @@
 const Product = require('../models/products.js')
 const User = require('../models/users.js')
 const {v4:uuid} = require('uuid')
-const {findUser, updateProduct, addProduct, deleteProductFromTable } = require('../utils/dbqueries.js')
+const {findUser, updateProduct, addProduct, deleteProductFromTable, createSellerAccount } = require('../utils/dbqueries.js')
 
 function loadLoginPage(req,res){
     if(req.session.isLoggedIn && req.session.isAdmin){
         res.redirect("/admin/dashboard");
         return
     }
-    res.render("admin/login",{err:null})
+    res.render("seller/login",{err:null})
+}
+function loadSignUpPage(req,res){
+    if(req.session.isLoggedIn && req.session.isAdmin){
+        res.redirect("/admin/dashboard");
+        return
+    }
+    res.render("seller/signup",{err:null})
+}
+function signUpSeller(req,res){
+    const ob = {id: uuid(),...req.body}
+    console.log(req.body,"body");
+    console.log(req.files);
+    createSellerAccount(ob, req.files)
+    .then((result) => {
+        res.status(200).json(result)
+    }).catch((err) => {
+        console.log(err);
+    });
 }
 
 function loginAdmin(req,res){
     console.log(req.path,req.body);
-    findUser("users",{email:req.body.email})
+    findUser({email:req.body.email})
     .then((result) => {
         if(result.length>0){
             if(result[0].password==req.body.password && result[0].role=="admin"){
@@ -116,4 +134,4 @@ function setSession(req,user){
     req.session.role = user.role
     req.session.isAdmin = true
 }
-module.exports = {loadLoginPage,loginAdmin,loadDashboard,logout,addNewProduct,editProduct,deleteProduct}
+module.exports = {loadLoginPage,loginAdmin,loadDashboard,logout,addNewProduct,editProduct,deleteProduct, loadSignUpPage, signUpSeller}

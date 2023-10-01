@@ -16,7 +16,7 @@ function createUser(req,res){
         gender:gender,
         mobile:mobile,
     }
-    findUser({email:email})
+    findUser({table:"ecom_users",email:email})
     .then(result=>{
         if(result.length>0){
             res.render("user/signup",{err:"This email already exists. Please try another one. Or go back to login."})
@@ -58,15 +58,19 @@ function changepassword(req,res){
     const curr_password = req.body.current_password
     const new_password = req.body.new_password
     
-    findUserAndUpdate({id:req.session.userId,old_password:curr_password,new_password:new_password})
+    findUserAndUpdate({table:"ecom_users",field:"id",id:req.session.userId,old_password:curr_password,new_password:new_password})
     .then(result=>{
-        console.log(result);
+        if(result.changedRows>0){
+            res.status(200).send("pass updated successfully !")
+        }else {
+            res.status(404).send("Somthing went wrong !")
+        }
     })
     .catch(err=>{
         console.log(err);
+        res.status(500).send("Internal server error");
     })
 
-    // res.status(200).send("pass updated successfully !")
     // const msg =`
     //     <h1>Hi, ${u.name}</h1>
     //     <p>You account Password has been updated succesfully.<br>Thank You</p>`
@@ -79,20 +83,32 @@ function resetpassword(req,res){
     const token = req.params.token
     verifyToken(token,(err,data)=>{
         if(err){
-            res.send("Invalid Token")
+            res.status(401).send("Invalid Token")
         } else {
-            resetPassword({id:data.data.id, new_password:new_password})
+            resetPassword({table:"ecom_users",field:"id",id:data.data.id, new_password:new_password})
             .then(result=>{
                 console.log(result);
+                if(result.changedRows>0){
+                    findUser({table:"ecom_users",email:data.data.email})
+                    .then((r) => {
+                        if(r.length>0){
+                            const msg =`
+                            <h1>Hi, ${r[0].name}</h1>
+                            <p>You account Password has been Resetted succesfully.<br>Thank You</p>`
+                            sendMail(r[0].email,r[0].name,msg,"Password Resetted");
+                            res.status(303).redirect("/login");
+                        } else {
+                            res.status(404).send("Something went wrong !");
+                        }
+                    })
+                } else {
+                    res.status(404).send("Something went wrong !");
+                }
             })
             .catch(err=>{
                 console.log(err);
+                res.status(500).send("Internal server error");
             })
-            // const msg =`
-            // <h1>Hi, ${updatedUser.name}</h1>
-            // <p>You account Password has been Resetted succesfully.<br>Thank You</p>`
-            // sendMail(updatedUser.email,updatedUser.name,msg,"Password Resetted");
-            // res.status(200).send("Password Resetted Successfully !")
         }
     })
 }
@@ -105,12 +121,12 @@ function verifyEmail(req,res){
             res.status(404).send("Invalid token");
         } else {
             console.log(data.data.email)
-            findUser({email:data.data.email})
+            findUser({table:"ecom_users",email:data.data.email})
             .then((result) => {
                 if(result.length<=0){
                     res.status(404).send("User Not Found !");
                 }
-                updateUser({id:data.data.id})
+                updateUser({table:"ecom_users",modField:"isVerified",queField:"id",id:data.data.id})
                 .then(d=>{
                     if(d.changedRows>0){
                         console.log(result);
@@ -146,7 +162,7 @@ function loginUser(req,res){
     const username = req.body.email
     const password = req.body.password
     console.log(username,password);
-    findUser({email: username})
+    findUser({table:"ecom_users",email: username})
     .then(result=>{
         if(result.length>0){
             if(result[0].password==password && result[0].role=="user"){
@@ -276,18 +292,21 @@ function editItemQuantity(req,res){
 }
 
 function sendPasswordResetMail(req,res){
-    findUser({email:req.body.email},(err,user)=>{
-        console.log(err, user);
-        if(err){
-            res.render("user/forgotpassword",{err:"Email does not exists."})
-        } else {
-            const msg = `<h2>Hello ${user.name},</h2>
+    findUser({table:"ecom_users",email:req.body.email})
+    .then((result) => {
+        if(result.length>0){
+            const msg = `<h2>Hello ${result[0].name},</h2>
             <h2>Greetings from WOW BAZZAR,</h2> 
-            <p><a href="http://127.0.0.1:8000/forgotpassword/${createToken(req.body.email, user._id)}">Click here</a> to Reset the password.</p>`;
-            sendMail(req.body.email,user.name,msg,"Reset Password");
+            <p><a href="http://127.0.0.1:8000/forgotpassword/${createToken(req.body.email,result[0].id)}">Click here</a> to Reset the password.</p>`;
+            sendMail(req.body.email,result[0].name,msg,"Reset Password");
             res.status(200).send("A Mail has been sent to this account to reset password.")
+        } else{
+            res.status(404).send("Somthing went wrong !");
         }
-    })
+    }).catch((err) => {
+        console.log(err);
+        res.render("user/forgotpassword",{err:"Email does not exists."})
+    });
 }
 
 function setSession(req,user){

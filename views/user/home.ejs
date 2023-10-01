@@ -142,7 +142,7 @@
         }
 
     </style>
-    <link rel="stylesheet" href="/dashboardHeader.css">
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
 </head>
 <body>
     <%- include('components/header') %>
@@ -169,7 +169,7 @@
                     p_item.className = "product-item"
 
                     p_item.innerHTML = `
-                        <div class="product-image"><img class="p-image" src="${element.image.endsWith(".jpg") || element.image.endsWith(".png")?element.image:"/uploads/"+element.image}" alt="${element.name}"></div>
+                        <div class="product-image"><img class="p-image" src="${element.image}" alt="${element.name}"></div>
                         <div class="product-title">${element.name}</div>
                         <div class="product-price">$ ${element.price}</div>`;
                     
@@ -235,7 +235,7 @@
             p_details.innerHTML = `
             <div class="close" id="popUpDesc" onclick="closePopUpDesc()"><button onclick = "closePopUpDesc()" style="color: black; background-color:white; border:none; font-size: 18px;">&times;</button></div>
                 <div style="height: 100%; width: 100%; display: flex;">
-                    <div class="product-image-p"><img class="p-image-p" src="${p.image.endsWith(".jpg") || p.image.endsWith(".png")?p.image:"/uploads/"+p.image}" alt="Product_image-p"></div>
+                    <div class="product-image-p"><img class="p-image-p" src="${p.image}" alt="${p.name}"></div>
                     <div class="product-info-p">
                         <div class="product-info-item"><h3>${p.name}</h3></div>
                         <div class="product-info-item"><h2>Price : $ ${p.price}</h2></div>

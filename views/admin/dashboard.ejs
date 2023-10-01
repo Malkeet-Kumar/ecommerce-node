@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="/dashboardHeader.css">
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
     <style>
         * {
             padding: 0;
@@ -171,7 +171,7 @@
         pDiv.className = 'product_item';
         pDiv.innerHTML =
             `<div class="p_image">
-                <img src="${product.image.endsWith(".jpg") || product.image.endsWith(".png") ? product.image : "/uploads/" + product.image}" alt="Product_Image" style="height:100%; width:100%;">
+                <img src="${(product.image.includes("."))?product.image:"/"+product.image}" alt="${product.name}" style="height:100%; width:100%;">
             </div>
             <div class="p_title">
             <div class="div-info">Title:</div> 

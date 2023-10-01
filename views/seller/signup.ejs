@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Document</title>
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
+    <style>
+        .container{
+            margin-top: 10vh;
+            height: 100%;
+            width: 100%;
+            padding: 20px;
+        }
+        form {
+            margin: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 4px black;
+        }
+        .main-form{
+            display: grid;
+            grid-template-columns: 50% 50%;
+            border-top: 1px solid black;
+        }
+        .left-form, .right-form{
+            display: flex;
+            flex-direction: column;
+            padding: 20px 40px;
+            /* justify-content: center; */
+        }
+        .input-text{
+            margin: 10px;
+            padding: 7px 15px; 
+            border: 1px solid grey;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .input-file{
+            padding: 5px;
+            margin: 9px;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
+        .input-text:focus{
+            outline: 1px solid black;
+        }
+        .gender-btn{
+            margin-right: 10px;
+        }
+        .form-btns{
+            padding: 8px 18px;
+            margin: 10px 20px;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body >
+    <div class="header"> 
+        <h2 style="color: white; font-weight: bold; align-self: center;">WOW BAZZAR</h2>
+    </div>
+   <div class="container">
+       <h2 style="text-align: center; padding: 10px;">Seller SignUp Form</h2>
+       <form id="sellersignup" enctype="multipart/form-data">
+           <div class="main-form">
+                <div class="left-form">
+                    <input type="text" name="fname" id="fname" class="input-text" placeholder="First Name">
+                    <input type="email" name="email" id="email" class="input-text" placeholder="Email">
+                    <input type="date" name="dob" id="dob" class="input-text">
+                    <input type="text" name="buisnessName" id="buisnessName" class="input-text" placeholder="Buisness Name">
+                    <input type="number" name="aadharNumber" id="aadharNumber" class="input-text" placeholder="Aadhar Number" style="-moz-appearance: textfield;">
+                    <input type="text" name="panNumber" id="panNumber" class="input-text" placeholder="Pan Number">
+                    <input type="text" name="gstNumber" id="gstNumber" class="input-text" placeholder="Gst Number">
+                    <input type="password" name="password" id="password" class="input-text" placeholder="Password">
+                </div>
+                <div class="right-form">
+                    <input type="text" name="lname" id="lname" class="input-text" placeholder="Last Name">
+                    <input type="tel" name="mobile" id="mobile" class="input-text" placeholder="Mobile Number">
+                    <div class="input-text" style="border: none;">
+                        <div>
+                            <label for="gender">Male: </label>
+                            <input type="radio" name="gender" id="gender" value="M">
+                        </div>
+                        <div>
+                            <label for="gender">Female: </label>
+                            <input type="radio" name="gender" id="gender" value="F">
+                        </div>
+                        <div>
+                            <label for="gender">Other: </label>
+                            <input type="radio" name="gender" id="gender" value="O">
+                        </div>
+                    </div>
+                    <input type="text" name="buisnessAddress" id="buisnessAddress" class="input-text" placeholder="Buisness Address">
+                    <input type="file" name="aadharFile" id="aadharFile" class="input-file">
+                    <input type="file" name="panFile" id="panFile" class="input-file" >
+                    <input type="file" name="storeImage" id="storeImage" class="input-file" >
+                    <input type="file" name="profileImage" id="profileImage" class="input-file" >
+                </div>
+            </div>
+            <div style="display: flex; justify-content: center;">
+                <input type="reset" name="reset" id="reset" class="form-btns">
+                <input type="submit" name="submit" id="submit" value="Submit" class="form-btns" style="color: white; background-color:orange;">
+            </div>
+        </form> 
+   </div>
+</body>
+<script>
+    document.getElementById("sellersignup").addEventListener('submit',(e)=>{
+        e.preventDefault();
+        const fname = document.getElementById("fname")
+        const lname = document.getElementById("lname")
+        const email = document.getElementById("email")
+        const mobile = document.getElementById("mobile")
+        const profileImage = document.getElementById("profileImage")
+        const gender = document.getElementById("gender")
+        const dob = document.getElementById("dob")
+        const password = document.getElementById("password")
+        const aadharNumber = document.getElementById("aadharNumber")
+        const aadharFile = document.getElementById( "aadharFile")
+        const panNumber = document.getElementById( "panNumber")
+        const panFile = document.getElementById( "panFile")
+        const gstNumber = document.getElementById( "gstNumber")
+        const buisnessName = document.getElementById( "buisnessName")
+        const buisnessAddress = document.getElementById( "buisnessAddress")
+        const storeImage = document.getElementById("storeImage")
+
+        if(fname.value.trim().length<5){
+            alert("First Name is Required")
+            return false
+        }
+        if(lname.value.trim().length<5){
+            alert("Last Name is Required")
+            return false
+        }
+        if(email.value.trim().length<5){
+            alert("Email is Required")
+            return false
+        }
+        if(mobile.value.trim().length<10){
+            alert("Mobile is Required")
+            return false
+        }
+        if(profileImage.value.trim()==""){
+            alert("Profile photo is Required")
+            return false
+        }
+        if(gender.value.trim()==""){
+            alert("Gender is Required")
+            return false
+        }
+        if(dob.value.trim()==""){
+            alert("Date of Birth is Required")
+            return false
+        }
+        if(password.value.trim().length<4){
+            alert("password is Required")
+            return false
+        }
+        if(aadharNumber.value.trim().length<12){
+            alert("Aadhar Number is Required")
+            return false
+        }
+        if(aadharFile.value.trim()==""){
+            alert("Scanned copy of Aadhar is Required")
+            return false
+        }
+        if(panNumber.value.trim().length<10){
+            alert("PAN Number is Required")
+            return false
+        }
+        if(panFile.value.trim()==""){
+            alert("Scanned copy of PAN card is Required")
+            return false
+        }
+        if(gstNumber.value.trim().length<10){
+            alert("GST number is Required")
+            return false
+        }
+        if(buisnessName.value.trim().length<10){
+            alert("Buisness Name is Required")
+            return false
+        }
+        if(buisnessAddress.value.trim().length<10){
+            alert("Buisness Name is Required")
+            return false
+        }
+        if(storeImage.value.trim()==""){
+            alert("Store image is Required")
+            return false
+        }
+        
+        const formData = new FormData(document.getElementById("sellersignup"));
+        console.log(formData);
+        // debugger
+        fetch("/seller/signup",{
+            method:"POST",
+            body:formData,
+        })
+        .then(res=>{
+            console.log(res.json());
+        })
+        .catch(err=>{
+            console.log(err);
+        })
+    })
+</script>
+
+</html>
