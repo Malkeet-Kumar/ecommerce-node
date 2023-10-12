@@ -1,0 +1,48 @@
+<style>
+    .headerBtns{
+        background-color:#642b59;
+        color: white; 
+        border: none; 
+        padding: 8px; 
+        border-radius: 5px; 
+        text-decoration: none;
+    }
+    .logo{
+        height: 10vh;
+        background-color: #0f0a38;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+<div class="logo" ><h1>WOW BAZZAR</h1></div>
+<div class="header">
+    <div class="inner-div-header">
+    <% if (loggedin) { %> 
+        <div class="left">
+            <!-- <h1 style=" color: white;">WOW BAZZAR</h1> -->
+            <div>
+                <a href="/seller/orders/new/0" class="headerBtns">New Orders</a>
+                <a href="/seller/orders/cancelled/0" class="headerBtns">Cancelled Orders</a>
+                <a href="/seller/orders/accepted/0" class="headerBtns">Accepted Orders</a>
+                <a href="/seller/orders/dispatched/0" class="headerBtns">Dispatched Orders</a>
+                <a href="/seller/sales/report" class="headerBtns">Sales Report</a>
+                <a id="addproduct" style="user-select: none; cursor: pointer; background-color:#642b59; color: white; border: none; padding: 8px; border-radius: 5px; text-decoration: none;">Add Product</a>
+            </div>
+        </div>
+        <div class="right">
+            <div class="profile-div">
+                <div class="profile-btn" id="profile-btn">
+                    <img src="/icons/profile-icon.png" alt="notification" height="25px" width="24px">
+                </div>
+                <h4 class="<%= userId %>" id="username"><%= username %></h4>
+            </div>
+           
+                <div>
+                    <a id="logout" href="/seller/logout" class="headerBtns">Logout</a>
+                </div>
+            </div>
+    <% } %>
+    </div>
+</div>

@@ -1,4 +1,3 @@
-const Product = require('../models/products')
 const db = require('../models/db');
 
 function findUser(query){
@@ -16,7 +15,7 @@ function createUserAccount(user){
     return new Promise((resolve, reject)=>{
         db.query(`insert into ecom_users values ("${user.id}","${user.name}",
         "${user.email}","${user.gender}","${user.mobile}",
-        false,"user",,"${user.password}")`,
+        false,"user","${user.password}")`,
         (err,res)=>{
             if(err){
                 reject(err);
@@ -30,8 +29,8 @@ function createSellerAccount(seller, files){
     return new Promise((resolve, reject)=>{
         db.query(`insert into sellers values("${seller.id}","${seller.fname}","${seller.lname}","${seller.gender}",
         "${seller.email}","${seller.mobile}","${seller.dob}","${seller.buisnessName}","${seller.buisnessAddress}",
-        "${seller.aadharNumber}","${seller.panNumber}","${seller.gstNumber}","${files[1].filename}",
-        "${files[2].filename}","${files[3].filename}","${files[0].filename}",false, false, "seller",${seller.password})`,(err,res)=>{
+        "${seller.aadharNumber}","${seller.panNumber}","${seller.gstNumber}","${files[0].filename}",
+        "${files[1].filename}","${files[2].filename}","${files[3].filename}",false, false, "seller","${seller.password}")`,(err,res)=>{
             if(err){
                 reject(err);
             }
@@ -94,13 +93,14 @@ function findCart(query){
     })
 }
 
-function findProduct(query,callback){
-    Product.findOne(query)
-    .then(res=>{
-        callback(null,res)
-    }) 
-    .catch(err=>{
-        callback(err)
+function findProduct(pid){
+    return new Promise((resolve, reject)=>{
+        db.query(`select * from products where p_id = "${pid}"`,(err,product)=>{
+            if(err){
+                reject(err)
+            }
+            resolve(product);
+        })
     })
 }
 
@@ -140,7 +140,7 @@ function updateProduct(query){
 
 function addItemToCart(query){
     return new Promise((resolve,reject)=>{
-        db.query(`insert into carts(product_id,user_id,order_quantity) values("${query.pid}","${query.uid}","${query.quantity}")`,(err,res)=>{
+        db.query(`insert into carts(product_id,user_id,order_quantity,sub_total,org_price) values("${query.pid}","${query.uid}","${query.quantity}","${query.sub_total}","${query.price}")`,(err,res)=>{
             if(err){
                 reject(err)
             }
@@ -151,7 +151,7 @@ function addItemToCart(query){
 
 function updateCart(query){
     return new Promise((resolve, reject)=>{
-        db.query(`update carts set order_quantity = "${query.quantity}" where product_id="${query.pid}" and user_id="${query.uid}"`,(err,res)=>{
+        db.query(`update carts set order_quantity = "${query.quantity}", sub_total = "${query.sub_total}" where product_id="${query.pid}" and user_id="${query.uid}"`,(err,res)=>{
             if(err){
                 reject(err);
             }
@@ -162,11 +162,25 @@ function updateCart(query){
 
 function addProduct(query){
     return new Promise((resolve,reject)=>{
-        db.query(`insert into products values("${query.p_id}","${query.name}","${query.description}",${query.price},${query.quantity},"${query.image}")`,(err,res)=>{
+        db.query(`insert into products values("${query.p_id}","${query.name}","${query.description}",${query.price},${query.quantity},"${query.image}","${query.seller_id}")`,(err,res)=>{
             if(err){
                 reject(err);
             }
             resolve(res);
+        })
+    })
+}
+
+function getSellerProducts(query){
+    return new Promise((resolve,reject)=>{
+        const page =  query.page || 1;
+        const pageSize = 5;
+        const startIndex = (page - 1) * pageSize;
+        db.query(`select * from products where seller_id = "${query.seller_id}" limit ${pageSize} offset ${startIndex}`,(err,products)=>{
+            if(err){
+                reject(err)
+            }
+            resolve(products)
         })
     })
 }
@@ -182,4 +196,104 @@ function deleteProductFromTable(query){
     })
 }
 
-module.exports = {createSellerAccount,addProduct,deleteCartItem,addItemToCart,findUser, updateUser,findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, updateProduct, createUserAccount, resetPassword, deleteProductFromTable}
+function place_order(query){  
+    return new Promise((resolve, reject)=>{
+        db.query(`insert into orders 
+        values("${query.o_id}",
+                "${query.p_id}",
+                "${query.u_id}",
+                "${query.bill}",
+                "${query.addr}",
+                "${query.ordertime}",
+                NULL,
+                "pending",
+                "waiting",
+                "${query.seller_id}",
+                ${query.quantity},
+                "${query.p_mode}",
+                NULL,
+                NULL,
+                "${query.city}",
+                "${query.pincode}"
+                )`,
+                (err, data)=>{
+                    if(err){
+                        reject(err);
+                    }
+                    resolve(data);
+                }
+        )
+    })
+}
+
+function getAllOrders(query){
+    return new Promise((resolve, reject)=>{
+        db.query(`select * from orders cross join products on orders.p_id = products.p_id where ${query.field} = "${query.value}"`,(err,data)=>{
+            if(err){
+                reject(err)
+            }
+            resolve(data)
+        })
+    })
+}
+
+function updateOrder(query){
+    return new Promise((resolve,reject)=>{
+        db.query(`update orders set ${query.qry} where order_id="${query.oid}"`,(err,data)=>{
+            if(err){
+                console.log(err);
+                reject(err)
+            }
+            console.log(data);
+            resolve(data)
+        })
+    })
+}
+
+function getNewOrdersForSeller(query){
+    return new Promise((resolve, reject)=>{
+        db.query(`select * from orders cross join products on orders.p_id = products.p_id where products.seller_id = "${query.sid}" and status="${query.sts}"`,(err,data)=>{
+            if(err){
+                console.log(err);
+                reject(err)
+            }
+            console.log(data);
+            resolve(data)
+        })
+    })
+}
+
+function getNearByCenter(query){
+    return new Promise((resolve, reject)=>{
+        db.query(`select shipper_id, name, mobile, email, center, center_number, pincode, city from shippers where city = "${query.city}"`,(err,data)=>{
+            if(err){
+                reject(err)
+            }
+            resolve(data)
+        })
+    })
+}
+
+module.exports = {
+    getSellerProducts,
+    createSellerAccount,
+    addProduct,
+    deleteCartItem,
+    addItemToCart,
+    findUser, 
+    updateUser,
+    findUserAndUpdate, 
+    findCart, 
+    findProduct, 
+    getAllCarts, 
+    updateCart, 
+    updateProduct, 
+    createUserAccount, 
+    resetPassword, 
+    deleteProductFromTable,
+    place_order,
+    getAllOrders,
+    getNewOrdersForSeller,
+    updateOrder,
+    getNearByCenter
+}

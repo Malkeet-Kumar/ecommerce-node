@@ -35,6 +35,14 @@ userRoutes.route("/cart/:item")
 .patch(userController.editItemQuantity)
 .delete(userController.removeFromCart)
 
+userRoutes.route("/order")
+.get(userController.getOrderPage)
+.post(userController.placeOrder)
+
+userRoutes.route("/myorders/:id")
+.get(userController.getMyOrders)
+.post(userController.cancelOrder)
+
 userRoutes.get("/cart",userController.loadMyCartPage)
 
 userRoutes.get("/mycart",userController.loadMyCart)

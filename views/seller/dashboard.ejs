@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+        .content-div {
+            margin-top: 2vh;
+            height: 100%;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 20% 20% 20% 20% 20%;
+            grid-row-gap: 15px;
+        }
+
+        .add-product-div {
+            height: 100vh;
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .add-product-form {
+            margin-top: 10px;
+            padding: 30px 20px;
+            height: 350px;
+            width: 400px;
+            box-shadow: 1px 1px 4px black;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+
+        .add-product-form input {
+            padding: 10px 20px;
+            width: 80%;
+            align-self: center;
+        }
+
+        .product_item {
+            /* padding: 3px;
+            width: 20%;
+            height: 60vh;
+            box-shadow: 1px 1px 4px black; */
+            margin: 0 auto;
+            height: 60vh;
+            width: 18vw;
+            background-color: white;
+            box-shadow: 0px 0px 5px black;
+        }
+
+        .p_image {
+            padding: 5px;
+            width: 100%;
+            height: 48%;
+            /* border-bottom: 1px solid grey; */
+        }
+
+        .p_title,
+        .p_price,
+        .p_desc,
+        .p_quantity {
+            margin: 1px;
+            width: 100%;
+            height: 10%;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+
+        .action-btn-div {
+            width: 100%;
+            height: 10%;
+            margin: 1px;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+        }
+
+        .action-btn {
+            height: 96%;
+            width: 50%;
+            padding: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border: none;
+            margin: 0px 2px;
+            background-color: black;
+        }
+
+        #updateBtn {
+            background-color: blue;
+        }
+
+        #deleteBtn {
+            background-color: red;
+        }
+
+        .div-info {
+            width: 30%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .div-edtText {
+            padding: 8px;
+            width: 70%;
+            margin-right: 5px;
+            text-overflow: ellipsis;
+        }
+
+        .div-edtText:focus {
+            outline: none;
+        }
+
+        #loadMore {
+            padding: 8px 15px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            background-color: blueviolet;
+            border: none;
+            border-radius: 5px;
+            position: fixed;
+            bottom: 30px;
+            right: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('components/header') %>
+        <div class="content-div" id="content-div"></div>
+        <div class="add-product-div" id="add-product-div">
+            <h1>Welcome Admin</h1>
+            <form class="add-product-form" id="newproduct" enctype="multipart/form-data">
+                <input type="text" name="name" id="name" placeholder="Product Name">
+                <input type="number" name="price" id="price" placeholder="Product Price">
+                <input type="text" name="desc" id="desc" placeholder="Product Description">
+                <input type="number" name="quantity" id="quantity" placeholder="Product Quantity">
+                <div style="display: flex; align-items: center; justify-content: space-evenly; margin-left: 30px;">
+                    <label for="product_image">Image</label>
+                    <input type="file" name="product_image" id="product_image">
+                </div>
+                <input type="submit" name="submitproduct" id="submitproduct" value="Add Product"
+                    style="color: white; background-color: green; border: none; border-radius: 5px;">
+            </form>
+        </div>
+        <button id="loadMore">Load More</button>
+</body>
+<script>
+    let itemBatch = 1;
+    const parent = document.getElementById("content-div");
+    const form = document.getElementById("add-product-div")
+    function createProductTile(product) {
+        const pDiv = document.createElement("div");
+        pDiv.id = product.p_id;
+        pDiv.className = 'product_item';
+        pDiv.innerHTML =
+            `<div class="p_image">
+                <img src="${(product.image.includes("."))?product.image:"/"+product.image}" alt="${product.name}" style="height:100%; width:100%;">
+            </div>
+            <div class="p_title">
+            <div class="div-info">Title:</div> 
+            <input class="div-edtText" type="text" name="" id="name-${product.p_id}" value="${product.name}"">
+            </div>
+            <div class="p_price">
+            <div class="div-info">Price:</div>
+            <input class="div-edtText" type="text" name="" id="price-${product.p_id}" value="${product.price}">
+            </div>
+            <div class="p_desc">
+            <div class="div-info">Desc:</div> 
+            <input class="div-edtText" type="text" name="" id="desc-${product.p_id}" value="${product.description}">
+            </div>
+            <div class="p_quantity">
+            <div class="div-info">Quantity:</div>
+            <input class="div-edtText" type="text" name="" id="quantity-${product.p_id}" value="${product.quantity}">
+            </div>
+            <div class="action-btn-div">
+            <button class="action-btn" id="updateBtn" onclick="updateProduct('${product.p_id}')">Update</button>
+            <button class="action-btn" id="deleteBtn" onclick="deleteProduct('${product.p_id}')">Delete</button>
+            </div>`
+
+        return pDiv
+    }
+
+    function deleteProduct(id) {
+        fetch("/seller/products/" + id, {
+            method: "DELETE"
+        })
+        .then(res => {
+            // console.log(res.ok);
+            // console.log(document.getElementById(`"${id}"`),"element");
+            if (res.status==200) {
+                document.getElementById(id).remove();
+                alert("Product deleted Successfully !");
+            } else {
+                alert("Something went wrong !");
+            }
+        })
+        .catch(err => {
+            console.log(err);
+            alert("Something went wrong !");
+        })
+    }
+
+    function updateProduct(id) {
+        console.log(id);
+        const name = document.getElementById("name-" + id).value.trim()
+        const price = document.getElementById("price-" + id).value.trim()
+        const desc = document.getElementById("desc-" + id).value.trim()
+        const quantity = document.getElementById("quantity-" + id).value.trim()
+        console.log(name, price, desc, quantity);
+        if (name.length > 3 && price.length > 0 && desc.length > 10 && quantity.length > 0) {
+            fetch("/seller/products/" + id, {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "Application/Json",
+                },
+                body: JSON.stringify({
+                    name: name,
+                    price: price,
+                    desc: desc,
+                    quantity: quantity
+                })
+            })
+                .then(res => {
+                    if (res.status == 200) {
+                        alert("Product updated successfully !");
+                        name.value = res.productName
+                        price.value = res.price
+                        desc.value = res.desc
+                        quantity.value = res.quantity
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                    alert("something went wrong !")
+                })
+        } else {
+            alert("something went wrong ! with data")
+        }
+    }
+
+    function fetchProducts(itemBatch) {
+        fetch("/seller/products/" + itemBatch++)
+            .then(result => result.json())
+            .then(res => {
+                console.log(res);
+                res.forEach(element => {
+                    parent.appendChild(createProductTile(element))
+                });
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }
+
+    fetchProducts(itemBatch);
+
+    document.getElementById("loadMore").addEventListener('click', (e) => {
+        itemBatch++;
+        fetchProducts(itemBatch);
+        parent.scrollTop = parent.scrollHeight;
+        window.scrollTo(0, parent.scrollHeight);
+    })
+
+    document.getElementById("addproduct").addEventListener('click', (e) => {
+        if (parent.style.display == "grid") {
+            parent.style.display = "none"
+            form.style.display = "flex";
+            document.getElementById("loadMore").style.display = "none"
+            document.getElementById("addproduct").innerText = "Back to Products"
+        } else {
+            parent.style.display = "grid"
+            form.style.display = "none";
+            document.getElementById("loadMore").style.display = "block"
+            document.getElementById("addproduct").innerText = "Add Product"
+        }
+    })
+
+    document.getElementById("newproduct").addEventListener('submit', (e) => {
+        e.preventDefault()
+        const name = document.getElementById("name").value.trim()
+        const price = document.getElementById("price").value.trim()
+        const description = document.getElementById("desc").value.trim()
+        const quantity = document.getElementById("quantity").value.trim()
+        const image = document.getElementById("product_image").files[0];
+        const formdata = new FormData(document.getElementById("newproduct"))
+        if (name.length < 5) {
+            alert("Name is required !")
+            return false
+        }
+
+        if (price.length == 0) {
+            alert("Price is required !")
+            return false
+        }
+
+        if (desc.length < 15) {
+            alert("Description is required !")
+            return false
+        }
+
+        if (quantity.length == 0) {
+            alert("Quantity is required !")
+            return false
+        }
+
+        if (!image) {
+            errorMessage.textContent = 'Please select an image.';
+            return false
+        }
+
+        const fileName = image.name;
+        const fileExtension = fileName.split('.').pop().toLowerCase();
+
+        if (!['jpg', 'jpeg', 'png'].includes(fileExtension)) {
+            alert('Please select a valid image file with the extensions: jpg, jpeg, or png.');
+            return false
+        }
+
+        if(image.size>250*1024){
+            alert("Image is too big ! image should not exceed 250kb")
+            return false
+        }
+        fetch("/seller/products", {
+            method: "POST",
+            body: formdata
+        })
+        .then(res => {
+            if (res.status == 200) {
+                alert("Product added successfully !")
+                parent.style.display = "grid"
+                form.style.display = "none";
+                document.getElementById("loadMore").style.display = "block"
+                document.getElementById("addproduct").innerText = "Add Product"
+                document.getElementById("name").value = ""
+                document.getElementById("price").value = ""
+                document.getElementById("desc").value = ""
+                document.getElementById("quantity").value = ""
+                document.getElementById("product_image").value = ""
+                return res.json()
+            } else {
+                alert("Something went wrong !")
+            }
+        })
+        .then(res => {
+            parent.prepend(createProductTile(res));
+        })
+        .catch(err => {
+            console.log(err);
+            console.log("Something went wrong !");
+        })
+    })
+</script>
+
+</html>

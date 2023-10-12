@@ -13,14 +13,6 @@ function getProducts(req,res){
         }
         res.json(products)
     })
-    // Product.find({}).sort({createdAt:-1,updatedAt:-1,_id:-1}).limit(pageSize).skip(startIndex)
-    // .then(p=>{
-    //     res.json(p)
-    // })
-    // .catch(err=>{
-    //     console.log(err);
-    // })
-
 }
 
 module.exports = {getProducts}

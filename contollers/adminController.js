@@ -13,7 +13,7 @@ function loadLoginPage(req,res){
 
 function loginAdmin(req,res){
     console.log(req.path,req.body);
-    findUser("users",{email:req.body.email})
+    findUser({table:"ecom_users",email:req.body.email})
     .then((result) => {
         if(result.length>0){
             if(result[0].password==req.body.password && result[0].role=="admin"){

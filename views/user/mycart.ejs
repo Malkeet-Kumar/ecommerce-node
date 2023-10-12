@@ -13,18 +13,20 @@
         }
 
         .content-div {
-            padding-top: 20px;
-            margin-top: 10vh;
+            width: 70%;
+            padding-top: 10px;
+            /* margin-top: 10vh; */
             display: grid;
-            grid-template-columns: 20% 20% 20% 20% 20%;
+            grid-template-columns: 25% 25% 25% 25%;
             grid-template-rows: 80%;
             grid-row-gap: 10px;
+            
         }
 
         .product-item {
             margin: 0 auto;
-            height: 60vh;
-            width: 18vw;
+            height: 50vh;
+            width: 15vw;
             background-color: white;
             box-shadow: 1px 1px 3px grey;
         }
@@ -34,7 +36,6 @@
             height: 60%;
             width: 100%;
             background-repeat: no-repeat;
-
         }
 
         .product-title,
@@ -55,6 +56,8 @@
             padding: 2px 4px;
             margin-bottom: 2px;
             border-top: 1px solid grey;
+            justify-content: center;
+            align-items: center;
         }
 
         .actionBtn-deleteCart,
@@ -130,7 +133,7 @@
             align-items: center;
             height: 90vh;
             width: 100vw;
-            background-color: rgba(0, 0, 0, 0.329);
+            /* background-color: rgba(0, 0, 0, 0.329); */
         }
 
         .product-details-p {
@@ -169,20 +172,56 @@
             height: 100%;
             padding: 20px;
         }
+
+        .grand-total-bill{
+            width: 30%;
+            height: 90vh;
+            position: fixed;
+            right: 0;
+            bottom: 0;
+            /* z-index: -10; */
+        }
+        table, td, th {
+            border: 1px solid;
+            padding: 5px;
+        }
+        table {
+            margin: 10px auto;
+            width: 90%;
+            border-collapse: collapse;
+        }
+        .buy_button{
+            display: flex;
+            align-self: center;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 10px;
+            border: none;
+            background-color: rgb(255, 187, 0);
+            padding: 10px 15px;
+            margin: 5px auto;
+        }
     </style>
     <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
 </head>
 
 <body>
     <%- include('components/header') %>
-        <div class="content-div" id="content-div"></div>
+        <div>
+            <div class="content-div" id="content-div"></div>
+            <div class="grand-total-bill" id="grandtotalbill">
+                <table id="itemlist"></table>
+                <h1 id="totalbill" style="text-align: center;"></h1>
+            </div>
+        </div>
         <div class="background-div" id="a" style="position: fixed; top: 0; display: none;"></div>
         <!-- <button id="loadMore">Load More</button> -->
 </body>
 <script>
     const container = document.getElementById("content-div")
-
-    // let itemBatch = 1;
+    const cartItemList = document.getElementById("itemlist");
+    const cartDetails = document.getElementById("grandtotalbill")
+    const gBill = document.getElementById("totalbill")
     var loadedProducts = [];
     function fetcProducts() {
         fetch("/mycart")
@@ -193,8 +232,33 @@
                     const emptyMessage = document.createElement("h1");
                     emptyMessage.innerText = "Cart is empty !";
                     container.appendChild(emptyMessage);
+                    return
                 }
             }
+            let gb =0 ;
+            const tableHeader = document.createElement("tr")
+            tableHeader.innerHTML = `<th>Item</th>
+                            <th>Quantity</th>
+                            <th>Price</th>`
+            cartItemList.appendChild(tableHeader);
+            products.forEach(p=>{
+                const cartItem = document.createElement("tr")
+                cartItem.innerHTML = `<td>${p.name}</td>
+                                    <td id="td-${p.p_id}">${p.order_quantity}</td>
+                                    <td>${p.price}</td>`
+                cartItemList.appendChild(cartItem)
+                gb+=p.sub_total
+            })
+            gBill.innerText = `Total bill : $ ${gb}`
+            const buy_now = document.createElement("button")
+            buy_now.className = 'buy_button'
+            buy_now.innerText = "Buy Now"
+            buy_now.href = "/order"
+            buy_now.addEventListener('click',e=>{
+                console.log(e);
+                location.href = "/order"
+            })
+            cartDetails.appendChild(buy_now)
             products.forEach(element => {
                 console.log(element);
                 let itemQuantity = element.order_quantity;
@@ -204,9 +268,13 @@
 
                 p_item.innerHTML = `
                     <div class="product-image"><img class="p-image" src="${element.image}" alt="${element.name}"></div>
-                    <div class="product-title">${element.name}</div>
-                    <div class="product-price">${element.price} $</div>`;
+                    <div class="product-title">${element.name}</div>`;
 
+                const subtotal = document.createElement("div");
+                subtotal.className = "product-price"
+                subtotal.innerText = "$ "+element.sub_total
+                p_item.appendChild(subtotal)
+                // <div class="" id="sub_total">${element.sub_total} $</div>
                 const productQuantityDiv = document.createElement("div");
                 productQuantityDiv.className = "product-quantity";
 
@@ -234,8 +302,14 @@
                     })
                     .then(res =>res.json())
                     .then(res=>{
-                        if(res)
-                            quant.innerText = "Quantity : " + res.quantity                            
+                        if(res){
+                            subtotal.innerText = "$ "+res.sub_total
+                            quant.innerText = "Quantity : " + res.quantity
+                            // gBill.innerHTML = ''
+                            document.getElementById("td-"+element.p_id).innerText = res.quantity
+                            gb = gb+(res.sub_total/res.quantity)
+                            gBill.innerText = `Total bill : $ ${gb}`
+                        }
                     })
                     .catch(err => {
                         console.log(err);
@@ -261,8 +335,13 @@
                     })
                     .then(res =>res.json())
                     .then(res=>{
-                        if(res)
-                            quant.innerText = "Quantity : " + res.quantity                            
+                        if(res){
+                            subtotal.innerText = "$ "+res.sub_total
+                            quant.innerText = "Quantity : " + res.quantity  
+                            document.getElementById("td-"+element.p_id).innerText = res.quantity
+                            gb = gb-(res.sub_total/res.quantity)
+                            gBill.innerText = `Total bill : $ ${gb}`
+                        }
                     })
                     .catch(err => {
                         console.log(err);
@@ -330,7 +409,7 @@
                 <div class="product-image-p"><img class="p-image-p" src="${p.image}" alt="${p.name}"></div>
                 <div class="product-info-p">
                     <div class="product-name-p"><h3>${p.name}</h3></div>
-                    <div class="product-price-p"><h2>Price : ${p.price} $</h2></div>
+                    <div class="product-price-p"><h2>Price : ${p.sub_total} $</h2></div>
                     <div class="product-stock-p"><h3>Stock : ${p.quantity}</h3></div>
                     <div class="product-desc-p"><p>Description : ${p.description}</p></div>
                 </div>
@@ -347,10 +426,18 @@
 
     function viewDesc(element) {
         const popup = productDescriptionWindow(element)
-        container.style.display = "none"
+        popup.addEventListener('click',e=>{
+            e.stopPropagation()
+        })
+        // container.style.display = "none"
         document.getElementById("a").appendChild(popup);
         document.getElementById("a").style.display = "flex"
     }
+
+
+    document.getElementById("a").addEventListener('click',e=>{
+        closePopUpDesc(e);
+    })
 </script>
 
 </html>

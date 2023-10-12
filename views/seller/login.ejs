@@ -11,11 +11,6 @@
             margin: 0;
             box-sizing: border-box;
         }
-        .header{
-            height: 8vh;
-            width: 100%;
-            background-color: black;
-        }
         .login-div{
             height: 92vh;
             width: 100%;
@@ -91,11 +86,9 @@
     </style>
 </head>
 <body>
-    <div class="header">
-
-    </div>
+    <%- include('components/header') %>
     <div class="login-div">
-        <form action="seller/login" method="post" class="login-signup-form" id="login-form">
+        <form action="/seller/login" method="post" class="login-signup-form" id="login-form">
             <h3 style="text-align: center; margin-bottom: 15px;">Login</h3 style="text-align: center;">
           
             <div class="input-container">
@@ -108,7 +101,7 @@
               <input class="input-field" type="password" placeholder="Password" name="password" id="password">
             </div>
             <% if (err) { %>
-                <p style="color: red; font-weight: bold;"><%= err %></p>
+                <p style="color: red; font-weight: bold; width: inherit; text-wrap: wrap; margin: 5px 0px;"><%= err %></p>
             <% } %>
             <button type="submit" class="btn">Login</button>
             <p style="margin-top: 15px;"><a class="spanAnchor" href="/forgotpassword">Forgot Password</a></p>

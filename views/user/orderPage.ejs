@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .container{
+            padding-top: 20px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .cartItemList tr, .cartItemList th, .cartItemList td{
+            padding: 10px;
+            border: 1px solid black;
+        }
+        .cartItemList{
+            border-collapse: collapse;        
+        }
+        form{
+            margin: 10px;
+            height: 420px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+        .addressDetails{
+            width: 60%;
+        }
+        form input {
+             padding: 6px 10px;
+        }
+        .placeOrder_button{
+            display: flex;
+            align-self: center;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 10px;
+            border: none;
+            background-color: rgb(255, 187, 0);
+            padding: 10px 15px;
+            margin: 5px auto;
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <%- include('components/header') %>
+    <div class="container">
+        <table class="cartItemList">
+            <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Sub Total</th>
+            </tr>
+            <% if (carts) { %>
+                <% carts.forEach(item => { %>
+                    <tr>
+                        <td><%= item.name %></td>
+                        <td><%= item.order_quantity %></td>
+                        <td><%= item.price %></td>
+                        <td><%= item.sub_total %></td>
+                    </tr>
+                <% }) %>
+            <% } %>
+        </table>
+        <div>
+            <h1>Total bill: $ <%= t_bill %></h1>
+        </div>
+        <div class="Address-Details">
+            <h3 style="">Address</h3>
+            <form id="orderAddress">
+                <label for="">Full name</label>
+                <input type="text" name="fullname" id="fullname">
+                <label for="">Mobile</label>
+                <input type="text" name="mobile" id="mobile">
+                <label for="">Pincode</label>
+                <input type="text" name="pincode" id="pincode">
+                <label for="">Flat, House no., Building, Company, Apartment</label>
+                <input type="text" name="address1" id="address1">
+                <label for="">Area, Street, Sector, Village</label>
+                <input type="text" name="address2" id="address2">
+                <label for="">City</label>
+                <input type="text" name="city" id="city">
+                <!-- <label for="">State</label>
+                <input type="text" name="state" id="state"> -->
+                <label for="">Landmark (optional)</label>
+                <input type="text" name="landmark" id="landmark">
+            </form>
+            <h3>Payment Options</h3>
+            <select name="paymentOption" id="payment">
+                <option value="cod">Cash on Delivery</option>
+            </select>
+        </div>
+        <div>
+            <button class="placeOrder_button" id="placeOrder">Place Order</button>
+        </div>
+    </div>
+</body>
+
+<script>
+    const fullname = document.getElementById("fullname")
+    const mobile = document.getElementById("mobile")
+    const pincode = document.getElementById("pincode")
+    const address1 = document.getElementById("address1")
+    const address2 = document.getElementById("address2")
+    const city = document.getElementById("city")
+
+    document.getElementById("placeOrder").addEventListener('click',e=>{
+        if(fullname.value.trim().length<3){
+            alert("Please enter full name")
+            return false
+        }
+        if(mobile.value.trim().length<10){
+            alert("Please enter a Valid Mobile")
+            return false
+        }
+        if(pincode.value.trim().length<6){
+            alert("Please enter a valid Pincode")
+            return false
+        }
+        if(address1.value.trim().length<10){
+            alert("Address is required")
+            return false
+        }
+        if(city.value.trim().length<3){
+            alert("City is required")
+            return false
+        }
+        const po = document.getElementById("payment").value
+        const formData = new FormData(document.getElementById("orderAddress"))
+        formData.append("paymentOption",po)
+        fetch("/order",{
+            method:"POST",
+            body:formData
+        })
+        .then((result) => {
+            if(result.ok){
+                alert("Order placed successfully")
+                location.href="/myorders/all"
+            }
+        }).catch((err) => {
+            console.log(err);
+        });
+    })
+</script>
+
+</html>

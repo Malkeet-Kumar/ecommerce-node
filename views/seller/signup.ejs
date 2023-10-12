@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
     <style>
         .container{
-            margin-top: 10vh;
             height: 100%;
             width: 100%;
             padding: 20px;
@@ -23,7 +22,6 @@
         .main-form{
             display: grid;
             grid-template-columns: 50% 50%;
-            border-top: 1px solid black;
         }
         .left-form, .right-form{
             display: flex;
@@ -44,6 +42,13 @@
             margin: 9px;
             border: 1px solid black;
             border-radius: 5px;
+        }
+        .input-file-div{
+            margin-left: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            grid-template-columns: 30% 70%;
         }
         .input-text:focus{
             outline: 1px solid black;
@@ -73,6 +78,7 @@
                     <input type="email" name="email" id="email" class="input-text" placeholder="Email">
                     <input type="date" name="dob" id="dob" class="input-text">
                     <input type="text" name="buisnessName" id="buisnessName" class="input-text" placeholder="Buisness Name">
+                    <input type="text" name="city" id="city" class="input-text" placeholder="Your city">
                     <input type="number" name="aadharNumber" id="aadharNumber" class="input-text" placeholder="Aadhar Number" style="-moz-appearance: textfield;">
                     <input type="text" name="panNumber" id="panNumber" class="input-text" placeholder="Pan Number">
                     <input type="text" name="gstNumber" id="gstNumber" class="input-text" placeholder="Gst Number">
@@ -96,10 +102,23 @@
                         </div>
                     </div>
                     <input type="text" name="buisnessAddress" id="buisnessAddress" class="input-text" placeholder="Buisness Address">
-                    <input type="file" name="aadharFile" id="aadharFile" class="input-file">
-                    <input type="file" name="panFile" id="panFile" class="input-file" >
-                    <input type="file" name="storeImage" id="storeImage" class="input-file" >
-                    <input type="file" name="profileImage" id="profileImage" class="input-file" >
+                    <input type="text" name="pincode" id="pincode" class="input-text" placeholder="Area Pincode">
+                    <div class="input-file-div">
+                        <label for="aadharFile">Aadhar Pdf : </label>
+                        <input type="file" name="aadharFile" id="aadharFile" class="input-file">
+                    </div>
+                    <div class="input-file-div">
+                        <label for="panFile">Pan Pdf : </label>
+                        <input type="file" name="panFile" id="panFile"   class="input-file">
+                    </div>
+                    <div class="input-file-div">
+                        <label for="storeImage">Store Image : </label>
+                        <input type="file" name="storeImage" id="storeImage" class="input-file">
+                    </div>
+                    <div class="input-file-div">
+                        <label for="profileImage">Profile Image : </label>
+                        <input type="file" name="profileImage" id="profileImage"   class="input-file">
+                    </div>
                 </div>
             </div>
             <div style="display: flex; justify-content: center;">
@@ -196,13 +215,18 @@
         
         const formData = new FormData(document.getElementById("sellersignup"));
         console.log(formData);
-        // debugger
         fetch("/seller/signup",{
             method:"POST",
             body:formData,
         })
         .then(res=>{
-            console.log(res.json());
+            console.log(res);
+            if(res.redirected){
+                alert("An email has been sent to this email. Please open your mailbox and click on verify to proceed further")
+                location.href = res.url
+            } else {
+                alert("This mail is already registered. Please try with another one or go to Login.")
+            }
         })
         .catch(err=>{
             console.log(err);

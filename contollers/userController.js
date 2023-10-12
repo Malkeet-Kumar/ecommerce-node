@@ -1,10 +1,8 @@
-const Product = require('../models/products.js')
-const User = require('../models/users.js')
-const Cart = require('../models/cart.js')
+const db = require('../models/db');
 const sendMail = require("../utils/email.js")
 const {v4:uuid} = require('uuid')
 const {createToken,verifyToken} = require('../utils/tokenGenerator.js')
-const {findUser,updateUser, findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, createUserAccount, resetPassword, addItemToCart, deleteCartItem} = require('../utils/dbqueries.js')
+const {findUser,updateUser, findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, createUserAccount, resetPassword, addItemToCart, deleteCartItem, place_order, getAllOrders, updateOrder} = require('../utils/dbqueries.js')
 console.log(uuid());
 function createUser(req,res){
     const {username, email, password, gender, mobile} = req.body
@@ -39,7 +37,7 @@ function createUser(req,res){
 }
 
 function loadPasswordPage(req,res){
-    if(req.session.isLoggedIn && !req.session.isAdmin){
+    if(req.session.isLoggedIn && req.session.role=="user"){
         res.render("user/changePassword",{err:null});
         return
     } 
@@ -52,7 +50,7 @@ function loadResetPage(req,res){
 
 function changepassword(req,res){
     console.log(req.path);
-    if(!req.session.isLoggedIn && !req.session.user){
+    if(!req.session.isLoggedIn && req.session.role!="user" && !req.session.user){
         res.redirect("/login")
     }
     const curr_password = req.body.current_password
@@ -131,6 +129,9 @@ function verifyEmail(req,res){
                     if(d.changedRows>0){
                         console.log(result);
                         res.send("Email verified successfully");
+                    } else {
+                        console.log(result);
+                        res.send("Already verified")
                     }
                 })
             }).catch((err) => {
@@ -188,8 +189,8 @@ function logoutUser(req,res){
 }
 
 function loadHomePage(req,res){
-    if(req.session.isAdmin){
-        res.send("Admin can not access this page please logout first")
+    if(req.session.role!="user" && req.session.isLoggedIn){
+        res.send("This page is for normal user !")
         return
     }
         res.render("user/home",{username: req.session.name||"Guest",email: req.session.email, userId:req.session.userId, route:"/cart",btnText:"My Cart",loggedin:req.session.isLoggedIn || false});
@@ -197,10 +198,9 @@ function loadHomePage(req,res){
 
 
 function addToCart(req, res) {
-
     console.log(req.path);
     const item = req.params.item;
-    if(!req.session.isLoggedIn){
+    if(!req.session.isLoggedIn && req.session.role!="user"){
         res.status(302).redirect("/login");
         return;
     }
@@ -208,13 +208,23 @@ function addToCart(req, res) {
     findCart({pid: item,uid: req.session.userId})
     .then((result) => {
         if(result.length>0){
-            updateCart({pid:item,uid:req.session.userId,quantity:result[0].order_quantity+1})
+            console.log(result,"khkjhkjgjkhjkgjhg");
+            updateCart({pid:item,uid:req.session.userId,quantity:result[0].order_quantity+1,sub_total:result[0].org_price*(result[0].order_quantity+1)})
             .then(p=>{
                 res.send(p)
             })
         } else{
-            addItemToCart({pid:item,uid:req.session.userId,quantity:1})
-            res.send(result);
+            findProduct(item)
+            .then((result) => {
+                if(result.length>0){
+                    addItemToCart({pid:item,uid:req.session.userId,quantity:1,sub_total:result[0].price,price:result[0].price})
+                    .then((result) => {
+                        if(result.affectedRows>0){
+                            res.send(result);
+                        }
+                    })
+                }
+            })
         }
     }).catch((err) => {
         console.log(err);
@@ -225,7 +235,7 @@ function addToCart(req, res) {
 
 function loadMyCart(req,res){
    
-    if(!req.session.isLoggedIn){
+    if(!req.session.isLoggedIn && req.session.role!="user"){
         res.redirect("/login")
     } else {
         getAllCarts({uid:req.session.userId})
@@ -245,7 +255,7 @@ function loadMyCart(req,res){
 
 function removeFromCart(req,res){
     console.log(req.params.item);
-    if(!req.session.isLoggedIn){
+    if(!req.session.isLoggedIn && req.session.role!="user"){
         res.redirect("/login");
     } else {
         deleteCartItem({uid:req.session.userId, pid:req.params.item})
@@ -265,29 +275,100 @@ function removeFromCart(req,res){
 }
 
 function loadMyCartPage(req,res){
-    if(!req.session.isLoggedIn){
+    if(!req.session.isLoggedIn && req.session.role!="user"){
         res.redirect("/login")
     } else {
         res.render("user/mycart",{username: req.session.name,email: req.session.email, userId:req.session.userId, route:"/home",btnText:"Back",loggedin: req.session.isLoggedIn ||false});
     }
 }
 
-function editItemQuantity(req,res){
-    console.log(req.body);
-    if(!req.session.isLoggedIn){
+function getOrderPage(req,res){
+    if(!req.session.isLoggedIn && req.session.role!="user"){
         res.redirect("/login")
     } else {
-        updateCart({quantity:req.body.quantity, uid: req.session.userId, pid: req.params.item})
+        getAllCarts({uid:req.session.userId})
         .then((result) => {
-            console.log(result);
-            if(result.changedRows>0){
-                res.status(200).json({quantity : req.body.quantity});
-            } else{
-                res.status(404).send("Something went wrong");
+            if(result.length>0){
+                let bill;
+                db.query(`select sum(sub_total) as bill from carts where user_id="${req.session.userId}"`,(err,data)=>{
+                    if(err){
+                        res.send(err)
+                        return
+                    }
+                    console.log(data);
+                    res.render("user/orderPage",{t_bill:data[0].bill,carts:result,username: req.session.name,email: req.session.email, userId:req.session.userId, route:"/cart",btnText:"Back",loggedin: req.session.isLoggedIn ||false});
+                })
+            } else {
+                res.render("user/orderPage",null)
             }
         }).catch((err) => {
-            res.status(500).send("Internal Server Error !")
+            console.log(err);
+            res.send(err);
         });
+    }
+}
+
+function placeOrder(req,res){
+        const address = req.body.fullname+"\nMobile:"+req.body.mobile+"\n"+req.body.address1+"\n"+req.body.address2+"\n"+req.body.city+"\nPincode:"+req.body.pincode;
+        getAllCarts({uid:req.session.userId})
+            .then((result) => {
+            if(result.length>0){
+                console.log(result,"get All carts");
+                result.forEach(item => {
+                    const order= {
+                        o_id:uuid(),
+                        p_id:item.p_id,
+                        u_id:item.user_id,
+                        bill:item.sub_total,
+                        addr: address,
+                        ordertime: new Date().toISOString(),
+                        seller_id:item.seller_id,
+                        quantity:item.order_quantity,
+                        p_mode:req.body.paymentOption,
+                        city:req.body.city,
+                        pincode:req.body.pincode
+                    }
+                    console.log(order);
+                    place_order(order)
+                    .then((result) => {
+                        console.log(result,"when placing order");
+                       deleteCartItem({uid:item.user_id,pid:item.p_id})
+                       .then(r=>{
+                        console.log(r);
+                       })
+                    })
+                });
+                res.end("Order placed successfully")
+            } else {
+                res.status(500).send("Internal server error")
+            }
+        }).catch((err) => {
+            console.log(err);
+            res.send(err);
+        })
+}
+
+function editItemQuantity(req,res){
+    console.log(req.body);
+    if(!req.session.isLoggedIn && req.session.role!="user"){
+        res.redirect("/login")
+    } else {
+        findCart({pid: req.params.item, uid: req.session.userId})
+        .then((result) => {
+        if(result.length>0){
+            subtotal = result[0].org_price*req.body.quantity;
+            updateCart({quantity:req.body.quantity, uid: req.session.userId, pid: req.params.item, sub_total:subtotal})
+            .then((result) => {
+                console.log(result);
+                if(result.changedRows>0){
+                    res.status(200).json({quantity : req.body.quantity, sub_total: subtotal});
+                } else{
+                    res.status(404).send("Something went wrong");
+                }
+            }).catch((err) => {
+                res.status(500).send("Internal Server Error !")
+            });
+        }})
     }
 }
 
@@ -309,15 +390,60 @@ function sendPasswordResetMail(req,res){
     });
 }
 
+function getMyOrders(req,res){
+    getAllOrders({field:"u_id",value:req.session.userId})
+    .then((result) => {
+        console.log(result);
+        res.render("user/myOrders",{orders: result,username: req.session.name,email: req.session.email, userId:req.session.userId, route:"/home",btnText:"Back",loggedin: req.session.isLoggedIn ||false})
+    }).catch((err) => {
+        res.send(err)
+    });
+}
+
+function cancelOrder(req,res){
+    console.log(req.body)
+    updateOrder({qry:`status="cancelled", reason="${req.body.reason}", cancellationDate = "${new Date().toISOString()}"`,oid:req.params.id})
+    .then((result) => {
+        if(result.changedRows>0){
+            res.status(200).end()
+        } else {
+            res.status(404).end()
+        }
+    }).catch((err) => {
+        res.status(500).end()
+    });
+}
+
 function setSession(req,user){
     req.session.isLoggedIn = true
     req.session.user = true
     req.session.userId = user.id
     req.session.name = user.name
+    req.session.role = "user"
     req.session.email = user.email
 }
 
-module.exports = {loadLoginPage,loginUser,logoutUser,loadSignupPage,loadHomePage,
-         addToCart,loadMyCart,removeFromCart,loadMyCartPage, createUser, verifyEmail, changepassword,
-        loadPasswordPage, loadForgotPassword, sendPasswordResetMail, resetpassword, loadResetPage,
-        editItemQuantity}
+module.exports = {
+    loadLoginPage,
+    loginUser,
+    logoutUser,
+    loadSignupPage,
+    loadHomePage,
+    addToCart,
+    loadMyCart,
+    removeFromCart,
+    loadMyCartPage, 
+    createUser, 
+    verifyEmail, 
+    changepassword,
+    loadPasswordPage, 
+    loadForgotPassword, 
+    sendPasswordResetMail, 
+    resetpassword, 
+    loadResetPage,
+    editItemQuantity,
+    placeOrder,
+    getOrderPage,
+    getMyOrders,
+    cancelOrder
+}

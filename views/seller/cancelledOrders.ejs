@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="\stylesheets\dashboardHeader.css">
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+        .container{
+            padding-top: 10px;
+            display: flex;
+            flex-direction: column;
+            /* justify-content: center; */
+            align-items: center;
+        }
+        .orderItem{
+            width: 85%;
+            height: 250px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: flex-start;
+            box-shadow: 1px 1px 4px grey;
+            margin: 10px;
+        }
+        .p_image{
+            border-radius: 10px 0px 0px 10px;
+            width: 25%;
+        }
+        .order_details{
+            height: 100%;
+            width: 50%;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            align-items: center;
+        }
+        .shipping_address{
+            width: 100%;
+            height: 20%;
+        }
+        .payment_status, .bill, .quantity, .product_id{
+            padding: 2px;
+            height: 20%;
+            width: 100%;
+        }
+        .actions{
+            height: 100%;
+            width: 30%;
+            border-radius: 0px 10px 10px 0px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+        }
+        .order_id{
+            width: 100%;
+            word-wrap: break-word;
+            padding: 10px;
+        }
+        .action_btn{
+            align-self: flex-end;
+            background-color: red;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            margin-right: 30px;
+        }
+        p{
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <%- include('components/header') %>
+    <div class="container">
+        <% if(orders){ %>
+            <% orders.forEach(element => { %>
+                <div class="orderItem" id="orderItem-<%= element.order_id %>">
+                    <img src="<%= !element.image.includes(".")?"/"+element.image:element.image %>" alt="" class="p_image">
+                    <div class="order_details">
+                        <div class="product_id">Product Name: <%= element.name %></div>
+                        <div class="shipping_address">Shipping Address: <%= element.shipping_address %></div>
+                        <div class="payment_status">Payment mode: <%= element.payment_mode %></div>
+                        <div class="bill">Total Bill: <%= element.bill %> $</div>
+                        <div class="quantity">Quantity: <%= element.order_quantity %></div>
+                        <div class="quantity">Refund status: Not applicable on COD</div>
+                    </div>
+                    <div class="actions">
+                        <div class="order_id">
+                            <p>OrderId:</p>
+                            <p> <%= element.order_id %></p>
+                            <p>Product Id: </p>
+                            <p><%= element.p_id %></p>
+                            <br>
+                            <p>Cancelled On: <%= new Date(element.cancellationDate).toLocaleDateString() %></p>
+                            <p>Reason: <%= element.reason %></p>
+                        </div>
+                        <h3 style="color: red; align-self: flex-end; margin-right: 20px;">Cancelled</h3> 
+                    </div>
+                </div>
+            <% }) %>
+        <% } else { %>
+            <h1>No Cancelled orders has arrived yet!</h1>
+        <% } %>
+    </div>
+</body>
+</html>
