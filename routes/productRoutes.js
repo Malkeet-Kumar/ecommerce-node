@@ -1,8 +1,8 @@
 const express = require('express');
-const products = require('../contollers/products');
+const products = require('../controllers/products');
 const productsRoutes = express();
 
-productsRoutes.get("/products/:items",products.getProducts)
-// productsRoutes.get("/products/",products.getProducts)
+productsRoutes.get("/products/:items/:count",products.getProducts)
+productsRoutes.get("/totalItems",products.getCount)
 
 module.exports = productsRoutes

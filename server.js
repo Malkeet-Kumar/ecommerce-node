@@ -47,12 +47,14 @@ app.use(express.static(__dirname+"/public/uploads/productImages"))
 
 const UserRoutes = require("./routes/userRoutes")
 const AdminRoutes  =require("./routes/adminRoutes")
-const sellerRoutes = require('./routes/sellerRoutes')
+const SellerRoutes = require('./routes/sellerRoutes')
 const ProductRoutes = require("./routes/productRoutes")
+const ShipperRoutes = require('./routes/shipperRoutes')
 
 app.use("/",UserRoutes)
 app.use("/admin",AdminRoutes)
-app.use("/seller",sellerRoutes)
+app.use("/seller",SellerRoutes)
+app.use('/shipper',ShipperRoutes)
 app.use("/p",ProductRoutes)
 
 db.connect(err=>{

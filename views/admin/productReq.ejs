@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .content-div{
+            padding-top: 20px;
+            /* margin-top: 10vh; */
+            display: grid;
+            grid-template-columns: 20% 20% 20% 20% 20%;
+            grid-row-gap: 10px;
+        }
+        .product-item{
+            margin: 0 auto;
+            height: 50vh;
+            width: 18vw;
+            background-color: white;
+            box-shadow: 1px 1px 3px grey;
+        }
+        .product-image{
+            padding: 20px 10px;
+            height: 70%;
+            width: 100%;
+            background-repeat: no-repeat;
+            
+        }
+        .product-title, .product-price{
+            height: 8%;
+            width: 80%;
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-left: 15px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .product-actions{
+            height: 14%;
+            width: 100%;
+            display: flex;
+            padding: 2px 4px;
+            margin-bottom: 2px;
+            /* border-top: 1px solid grey; */
+        }
+        .actionBtn-addtocart, .actionBtn-viewdesc{
+            height: 96%;
+            width: 50%;
+            padding: 12px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+            border: none;
+            margin: 0px 2px;
+        }
+        .actionBtn-addtocart{
+            background-color: rgb(226, 84, 2);
+            border-radius: 10px;
+        }
+        .actionBtn-viewdesc{
+            background-color: black;
+            border-radius: 10px;
+        }
+        .p-image{
+            height: inherit;
+            width: inherit;
+        }
+        #viewdesc{
+            background-color: #292727;
+        }
+
+        .background-div{
+            margin-top: 10vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 90vh;
+            width: 100vw;
+            background-color: rgba(0, 0, 0, 0.329);
+        }
+        .product-details-p{
+            background-color: white;
+            z-index: 2;
+            height: 80vh;
+            width: 60vw;
+            box-shadow: 1px 1px 4px black;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        } 
+        .close{
+            height: 6%;
+            width: 100%;  
+            background-color: white;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            padding: 0 5px;
+            font-size: 25px;
+            font-weight: bold;
+        }
+        .product-image-p{
+            height: 80%;
+            width: 60%;
+            padding: 10px;
+            margin: 0 10px;
+        }
+        .product-info-p{
+            width: 40%;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .p-image-p{
+            height: 100%;
+            width: 100%;
+        }
+
+        .product-info-item{
+            padding: 2px;
+            margin: 5px 2px;
+        }
+
+    </style>
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
+</head>
+<body>
+    <%- include('components/header') %>
+    <div class="content-div" id="content-div"></div>  
+    <div class="background-div" id="a" style="position: fixed; top: 0; display: none;"></div>  
+</body>
+<script>
+        const container = document.getElementById("content-div");
+        const loadMoreBtn = document.getElementById("loadMore");
+        var loadedProducts = [];
+        function fetcProducts(){
+            fetch("/admin/products/all")
+            .then(p=>p.json())
+            .then(products=>{
+                if(!products){
+                    alert("there is no more products to load !");
+                    return;
+                }
+                products.forEach(element => {
+                    loadedProducts.push(element);
+                    const p_item = document.createElement("div")
+                    p_item.className = "product-item"
+
+                    p_item.innerHTML = `
+                        <div class="product-image"><img class="p-image" src="${element.image.includes(".")?element.image:"/"+element.image}" alt="${element.name}"></div>
+                        <div class="product-title">${element.name}</div>
+                        <div class="product-price">$ ${element.price}</div>`;
+                    
+                    const  actionDiv = document.createElement("div");
+                    actionDiv.className = "product-actions";
+
+                    const approveBtn = document.createElement("button");
+
+                    approveBtn.className = "actionBtn-addtocart";
+                    approveBtn.id = element.p_id;
+                    approveBtn.innerText = "Approve";
+
+                    approveBtn.addEventListener('click',e=>{
+                        e.stopPropagation()
+                        fetch("/admin/products/"+element.p_id,{
+                            method:"PATCH",
+                            headers:{
+                                'content-type':'application/json'
+                            },
+                            body:JSON.stringify({sts:"approved"})
+                        })
+                        .then(res=>{
+                            if(res.ok){
+                                alert("Product approved successfully")
+                                p_item.remove();
+                            } else {
+                                alert("Something went wrong")
+                            }
+                        })
+                        .catch(err=>console.log(err))
+                    })          
+                    
+                    const rejectBtn = document.createElement("button");
+                    rejectBtn.className = "actionBtn-viewdesc";
+                    rejectBtn.id = element.p_id;
+                    rejectBtn.innerText = "Reject"
+
+                    rejectBtn.addEventListener('click',e=>{
+                        e.stopPropagation()
+                        fetch("/admin/products/"+element.p_id,{
+                            method:"PATCH",
+                            headers:{
+                                'content-type':'application/json'
+                            },
+                            body:JSON.stringify({"sts":"rejected"})
+                        })
+                        .then(res=>{
+                            if(res.ok){
+                                alert("Product rejected")
+                                p_item.remove();
+                            } else {
+                                alert("Something went wrong")
+                            }
+                        })
+                        .catch(err=>console.log(err))
+                    })
+                    
+                    actionDiv.appendChild(approveBtn);
+                    actionDiv.appendChild(rejectBtn);
+                    p_item.appendChild(actionDiv);
+
+                    p_item.addEventListener('click',e=>{
+                        viewDesc(element)
+                    })
+                    container.appendChild(p_item);
+                    
+                });
+            })
+        }
+        
+        fetcProducts();
+
+        function productDescriptionWindow(p){         
+            const p_details = document.createElement("div")
+            p_details.className = "product-details-p";
+            p_details.id = "popDesc"
+            p_details.innerHTML = `
+            <div class="close" id="popUpDesc" onclick="closePopUpDesc()"><button onclick = "closePopUpDesc()" style="color: black; background-color:white; border:none; font-size: 18px;">&times;</button></div>
+                <div style="height: 100%; width: 100%; display: flex;">
+                    <div class="product-image-p"><img class="p-image-p" src="${p.image.includes(".")?p.image:"/"+p.image}" alt="${p.name}"></div>
+                    <div class="product-info-p">
+                        <h2>Product Info</h2>
+                        <div class="product-info-item"><p>${p.name}</p></div>
+                        <div class="product-info-item"><p>Price : $ ${p.price}</p></div>
+                        <div class="product-info-item"><p>Stock : ${p.quantity}</p></div>
+                        <div class="product-info-item"><p>Description : ${p.description}</p></div>
+                        <br>
+                        <h2>Seller Info</h2>
+                        <div class="product-info-item"><p>Name : ${p.fName} ${p.lName}</p></div>
+                        <div class="product-info-item"><p>Buisness Name : ${p.buisnessName}</p></div>
+                        <div class="product-info-item"><p>City : ${p.city}</p></div>
+                    </div>
+            </div>`
+            return p_details;
+        }
+
+        function closePopUpDesc(e){
+            const containerA = document.getElementById("a");
+            containerA.style.display = "none";
+            containerA.innerHTML = '';
+            container.style.display = "grid";
+        }
+
+        function viewDesc(element){
+            const popup = productDescriptionWindow(element)
+            container.style.display = "none"
+            document.getElementById("a").appendChild(popup);
+            document.getElementById("a").style.display="flex"
+        }
+    
+    </script>
+</html>

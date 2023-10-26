@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="\stylesheets\dashboardHeader.css">
+    <title>Document</title>
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+        .heading {
+            background-color: #141233;
+            color: white;
+            height: 60px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .content-div{
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .shipment-item{
+            margin: 10px;
+            padding: 10px;
+            width: 90%;
+            height: 100px;
+            background-color: rgb(230, 226, 226);
+            display: grid;
+            grid-template-columns: 50% 30% 10%;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 1px 1px 4px gray;
+        }
+        .actions{
+            display: flex;
+            flex-direction: column;        
+        }
+    </style>
+</head>
+<body>
+    <div class="heading"><h1>WOW BAZZAR</h1></div>
+    <%- include('components/header') %>
+    <div class="content-div">
+        <% if (shipments) { %>
+            <% shipments.forEach(element => { %>
+                <div class="shipment-item" id="item-<%= element.order_id %>">
+                    <div class="receiver-details">
+                        <h3>To: </h3>
+                        <p><%= element.shipping_address %></p>
+                    </div>
+                    <div class="shipment-details">
+                        <h3>Shipments Details</h3>
+                        <p>shipment id: <%= element.order_id %></p>
+                    </div>
+                    <div class="actions">
+                       <% if (page=="incoming") { %>
+                            <p>click if item is received</p>
+                            <button onclick="shipmentReceived('<%= element.order_id %>', `<%= (!element.S1receive_date)?'S1receive_date':'S2receive_date' %>`)">Received</button>
+                       <% } else if(page=="dispatchToNext") {%>
+                            <select name="" id="dispatch-to-<%= element.order_id %>">
+                                <option value="<%= element.shipper_id %>"><%= element.center %></option>
+                            </select>
+                            <button onclick="dispatchShipment('<%= element.order_id %>','shipper2_id')">Dispatch</button>
+                        <% } else if(page=="dispatched") {%>
+                            <h3>Dispatched to:</h3>
+                            <p><%= element.center %></p>
+                        <% } else if(page=="deliver") {%>
+                            <% if (delps) { %>
+                                <select name="" id="">
+                                    <% delps.forEach(d => { %>
+                                        <option value="<%= d.delp_id %>" id="assign-del-<%= element.order_id %>"><%= d.Dname %></option>
+                                        <% }) %>
+                                </select>
+                                <button onclick="assignToDelivery('<%= element.order_id %>','deliveryPerson_id')">Assign</button>
+                            <% } %>
+                        <% } else if(page=="delivering") { %>
+                            <h3>Assigned to:</h3>
+                            <p><%= element.Dname %></p>
+                        <% } %>
+                    </div>
+                </div>
+            <% }) %>         
+        <% } else { %>  
+            <div style="height: 70vh; width: 100%; display: flex; justify-content: center; align-items: center;">
+                <h1>No Orders</h1>
+            </div> 
+        <% } %>
+    </div>
+</body>
+<script>
+    function shipmentReceived(id, col){
+        console.log(col,  id);
+        alert(id, col)
+        fetch("/shipper/shipments/"+id,{
+            method:"PATCH",
+            headers:{
+                'content-type':'application/json'
+            },
+            body:JSON.stringify({col:col})
+        })
+        .then((result) => {
+            if(result.ok){
+                alert("Recieved Shipment");
+                document.getElementById("item-"+id).remove()
+            }
+            else 
+                alert("Somthing went wrong")
+        }).catch((err) => {
+            alert(err)
+        });
+
+    }
+
+    function dispatchShipment(id,col){
+        const shipper_id = document.getElementById("dispatch-to-"+id).value
+        fetch("/shipper/shipments/"+id,{
+            method:"PUT",
+            headers:{
+                'content-type':'application/json'
+            },
+            body: JSON.stringify({col:col,shipper_id:shipper_id})
+        })
+        .then((result) => {
+            if(result.ok){
+                alert("Order dispatched successfully")
+                document.getElementById("item-"+id).remove()
+            }
+            else 
+                alert("something went wrong")
+        }).catch((err) => {
+            alert(err)
+        });
+    }
+
+    function assignToDelivery(id,col){
+        const deliveryPerson = document.getElementById("assign-del-"+id).value
+        console.log(deliveryPerson);
+        fetch("/shipper/shipments/"+id,{
+            method:"PUT",
+            headers:{
+                'content-type':'application/json'
+            },
+            body:JSON.stringify({col:col, shipper_id: deliveryPerson})
+        })
+        .then((result) => {
+            if(result.ok){
+                alert("Shipment sent for delivery");
+                document.getElementById("item-"+id).remove()
+            }
+            else 
+                alert("Somthing went wrong")
+        }).catch((err) => {
+            alert(err)
+        });
+    }
+</script>
+</html>

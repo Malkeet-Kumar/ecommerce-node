@@ -1,5 +1,5 @@
 const express = require('express');
-const sellerController = require('../contollers/sellerController');
+const sellerController = require('../controllers/sellerController');
 const sellerRoutes = express();
 
 sellerRoutes.route("/login")
@@ -33,8 +33,11 @@ sellerRoutes.route("/orders/accepted/:id")
 sellerRoutes.route("/orders/dispatched/:id")
 .get(sellerController.getDispatchedOrders)
 
-sellerRoutes.route("/sales/report")
+sellerRoutes.route("/sales/report/")
 .get(sellerController.getSalesReport)
+
+sellerRoutes.get("/sales/allproducts", sellerController.getAllProducts)
+sellerRoutes.get("/sales/allorders/:filter", sellerController.getAllOrders)
 
 sellerRoutes.route("/products")
 .post(sellerController.addNewProduct)

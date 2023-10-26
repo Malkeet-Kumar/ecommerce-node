@@ -1,7 +1,21 @@
-const {createToken} = require('../utils/tokenGenerator')
+const {createToken,verifyToken} = require('../utils/tokenGenerator')
 const sendMail = require('../utils/email')
 const {v4:uuid} = require('uuid')
-const {findUser, updateProduct, addProduct, deleteProductFromTable, createSellerAccount, getSellerProducts, getNearByCenter, getNewOrdersForSeller, updateOrder } = require('../utils/dbqueries.js')
+const db = require('../models/db')
+const {
+    findUser, 
+    updateProduct, 
+    addProduct, 
+    deleteProductFromTable, 
+    createSellerAccount, 
+    getSellerProducts, 
+    getNearByCenter, 
+    getNewOrdersForSeller, 
+    updateOrder, 
+    updateUser, 
+    updateOrderTrackInfo,
+    getAllOrderReport
+} = require('../utils/dbqueries.js')
 
 function signUpSeller(req,res){
     const ob = {id: uuid(),...req.body}
@@ -16,7 +30,7 @@ function signUpSeller(req,res){
                 const msg = `<h2>Hello ${ob.fname},</h2>
                 <h2>Greetings from WOW BAZZAR,</h2>
                 <p>You have just registered on Wow Bazzar as a Seller.</p>
-                <p><a href="http://127.0.0.1:8000/verify/email/${createToken(req.body.email,ob.id)}">Click here</a> to verify your account, and to proceed further.</p>`;
+                <p><a href="http://127.0.0.1:8000/seller/verify/email/${createToken(req.body.email,ob.id)}">Click here</a> to verify your account, and to proceed further.</p>`;
                 sendMail(ob.email,ob.fname,msg,"Email verification");
                 res.redirect("/seller/login");
             })
@@ -36,17 +50,20 @@ function verifyEmail(req,res){
             console.log(data.data.email)
             findUser({table:"sellers",email:data.data.email})
             .then((result) => {
-                if(result.length<=0){
+                console.log(result.length);
+                if(result.length==0){
                     res.status(404).send("User Not Found !");
+                } else { 
+                    updateUser({table:"sellers",modField:"isMailVerified",queField:"seller_id",id:data.data.id})
+                    .then(d=>{
+                        if(d.changedRows>0){
+                            console.log(result);
+                            res.send("Email verified successfully. We are reviewing your application. We will contact you through this email please keep on checking our reply. Thank you.");
+                        }
+                    })
                 }
-                updateUser({table:"sellers",modField:"isMailVerified",queField:"seller_id",id:data.data.id})
-                .then(d=>{
-                    if(d.changedRows>0){
-                        console.log(result);
-                        res.send("Email verified successfully. We are reviewing your application. We will contact you through this email please keep on checking our reply. Thank you.");
-                    }
-                })
-            }).catch((err) => {
+            })
+            .catch((err) => {
                 console.log(err);
                 res.status(500).send(err)
             });
@@ -80,7 +97,7 @@ function loginSeller(req,res){
                 setSession(req,result[0])
                 res.redirect("/seller/dashboard");
             } else {
-                res.render("seller/login",{err:"Either your application is not accepted yet or your mail isn't verified"});
+                res.render("seller/login",{err:"Either your application is not accepted yet or your mail isn't verified",loggedin:false});
             }
         } else {
             res.render("seller/login",{err:"Invalid Credentials",loggedin:false});
@@ -186,7 +203,7 @@ function deleteProduct(req,res){
 }
 
 function getNewOrders(req,res){
-    console.log(req.session);
+    // console.log(req.session);
     getNewOrdersForSeller({sid:req.session.userId,sts:"waiting"})
     .then((result) => {
         if(result.length>0){
@@ -214,13 +231,15 @@ function getCancelledOrders(req,res){
     });
 }
 
-function getConfirmedOrders(req,res){
+async function getConfirmedOrders(req,res){
+    const shippers = await getNearByCenter({city:req.session.city})
     getNewOrdersForSeller({sid:req.session.userId,sts:"confirmed"})
     .then((result) => {
         if(result.length>0){
-            res.render("seller/confirmedOrders",{orders:result,username:req.session.name,userId:req.session.userId,loggedin:true})
+            res.render("seller/confirmedOrders",{shippers:shippers,orders:result,username:req.session.name,userId:req.session.userId,loggedin:true})
+            
         } else {
-            res.render("seller/confirmedOrders",{orders:null,username:req.session.name,userId:req.session.userId,loggedin:true})
+            res.render("seller/confirmedOrders",{shippers:null,orders:null,username:req.session.name,userId:req.session.userId,loggedin:true})
         }
     }).catch((err) => {
         console.log(err);
@@ -229,9 +248,10 @@ function getConfirmedOrders(req,res){
 }   
 
 function getDispatchedOrders(req,res){
-    getNewOrdersForSeller({sid:req.session.userId,sts:"dispatched"})
+    getNewOrdersForSeller({sid:req.session.userId,sts:"dispatched",dispatched:true})
     .then((result) => {
         if(result.length>0){
+            console.log(result);
             res.render("seller/dispatchedOrders",{orders:result,username:req.session.name,userId:req.session.userId,loggedin:true})
         } else {
             res.render("seller/dispatchedOrders",{orders:null,username:req.session.name,userId:req.session.userId,loggedin:true})
@@ -243,7 +263,7 @@ function getDispatchedOrders(req,res){
 }
 
 function getSalesReport(req,res){
-
+    res.render("seller/salesReport",{username:req.session.name,userId:req.session.userId,loggedin:true})
 }
 
 function acceptOrder(req,res){
@@ -251,11 +271,20 @@ function acceptOrder(req,res){
     updateOrder({qry:`status="confirmed", delivery_date = "${new Date(new Date().getTime() + 120 * 60 * 60 * 1000).toISOString()}"`,oid:req.params.id})
     .then((result) => {
         if(result.changedRows>0){
-            res.status(200).end()
-        } else {
-            res.status(404).end();
-        }
+            db.query(`insert into trackorders values("${req.params.id}",NULL,NULL,NULL,NULL,NULL,NULL)`,(err,data)=>{
+                if(err){
+                    console.log(err);
+                }
+                console.log(data);
+        
+                res.status(200).end()
+        })
+    } else {
+        res.status(404).end();
+    }
+
     }).catch((err) => {
+        console.log(err);
         res.status(500).send(err)
     });
 }
@@ -264,7 +293,12 @@ function dispatchTo(req,res){
     updateOrder({qry:`status = "dispatched"`,oid:req.params.id})
     .then((result) => {
         if(result.changedRows>0){
-            res.status(200).end();
+            updateOrderTrackInfo({qry: `shipper1_id = ${req.body.shipper_id} , dispatch_date = "${new Date().toISOString()}"`,oid: req.params.id})
+            .then((r) => {
+                if(r.changedRows>0){
+                    res.status(200).end();
+                }
+            })
         } else {
             res.status(404).end();
         }
@@ -284,6 +318,21 @@ function getNearbyCenter(req,res){
     }).catch((err) => {
         res.send(err);
     });
+}
+
+function getAllOrders(req,res){
+    getAllOrderReport({id:req.session.userId,filter:req.params.filter})
+    .then((result) => {
+        if(result.length>0){
+            res.json(result)
+        }
+    }).catch((err) => {
+        res.send(err)
+    });
+}
+
+function getAllProducts(req,res){
+
 }
 
 function setSession(req,user){
@@ -316,5 +365,7 @@ module.exports = {
     getSalesReport,
     acceptOrder,
     dispatchTo,
-    getNearbyCenter
+    getNearbyCenter,
+    getAllOrders,
+    getAllProducts
 }

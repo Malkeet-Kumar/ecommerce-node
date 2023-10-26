@@ -1,5 +1,5 @@
 const express = require('express');
-const userController = require('../contollers/userController');
+const userController = require('../controllers/userController');
 const userRoutes = express();
 
 userRoutes.get("/",userController.loadHomePage)
@@ -42,6 +42,8 @@ userRoutes.route("/order")
 userRoutes.route("/myorders/:id")
 .get(userController.getMyOrders)
 .post(userController.cancelOrder)
+
+userRoutes.get("/track/:id",userController.trackOrder)
 
 userRoutes.get("/cart",userController.loadMyCartPage)
 

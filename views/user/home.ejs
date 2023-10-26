@@ -1,93 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home</title>
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
     <style>
-        *{
+        * {
             padding: 0;
             margin: 0;
             box-sizing: border-box;
         }
-        .content-div{
-            padding-top: 20px;
-            /* margin-top: 10vh; */
-            display: grid;
-            grid-template-columns: 20% 20% 20% 20% 20%;
-            grid-row-gap: 10px;
+
+        body {
+            background-color: rgb(223, 219, 219);
         }
-        .product-item{
-            margin: 0 auto;
-            height: 50vh;
-            width: 18vw;
+
+        .content-div {
+            padding: 10px 10px 0px 10px;
+            display: grid;
+            /* grid-template-columns: 20% 20% 20% 20% 20%; */
+            /* display: flex; */
+            /* flex-wrap: wrap; */
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-gap: 1em;
+            margin-bottom: 60px;
+
+        }
+
+        /* .content-div, body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        } */
+
+        .product-item {
+            margin: 3px auto;
+            height: 370px;
+            width: 250px;
             background-color: white;
             box-shadow: 1px 1px 3px grey;
         }
-        .product-image{
-            padding: 20px 10px;
+
+        .product-image {
+            /* padding: 5px 2px; */
             height: 70%;
             width: 100%;
             background-repeat: no-repeat;
-            
+
         }
-        .product-title, .product-price{
-            height: 8%;
+
+        .product-title,
+        .product-price {
+            height: 9%;
             width: 80%;
             display: flex;
             align-items: center;
-            font-size: 18px;
+            font-size: 15px;
             font-weight: bold;
             margin-left: 15px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .product-actions{
-            height: 14%;
+
+        .product-price{
+            font-size: 19px;
+        }
+
+        .product-actions {
+            height: 10%;
             width: 100%;
             display: flex;
             padding: 2px 4px;
             margin-bottom: 2px;
-            border-top: 1px solid grey;
+            /* border-top: 1px solid grey; */
         }
-        .actionBtn-addtocart, .actionBtn-viewdesc{
-            height: 96%;
+
+        .actionBtn-addtocart,
+        .actionBtn-viewdesc {
+            height: 100%;
             width: 50%;
             padding: 12px;
             color: white;
-            font-size: 12px;
-            font-weight: bold;
+            font-size: 13px;
             border: none;
             margin: 0px 2px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
-        .actionBtn-addtocart{
+
+        .actionBtn-addtocart {
             background-color: black;
         }
-        .actionBtn-viewdesc{
+
+        .actionBtn-viewdesc {
             background-color: #2e2c2c;
         }
-        .p-image{
-            height: inherit;
+
+        .p-image {
+            height: 100%;
             width: inherit;
         }
-        #loadMore{
-            padding: 8px 15px;
-            font-size: 13px;
-            font-weight: bold;
-            color: white;
-            background-color: blueviolet;
-            border: none;
-            border-radius: 5px;
-            position: fixed;
-            bottom: 30px;
-            right: 20px;
-        }
-        #viewdesc{
+
+        #viewdesc {
             background-color: #292727;
         }
 
-        .background-div{
+        .background-div {
             margin-top: 10vh;
             display: flex;
             justify-content: center;
@@ -96,7 +117,8 @@
             width: 100vw;
             background-color: rgba(0, 0, 0, 0.329);
         }
-        .product-details-p{
+
+        .product-details-p {
             background-color: white;
             z-index: 2;
             height: 80vh;
@@ -106,10 +128,11 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-        } 
-        .close{
+        }
+
+        .close {
             height: 6%;
-            width: 100%;  
+            width: 100%;
             background-color: white;
             display: flex;
             flex-direction: row-reverse;
@@ -118,47 +141,102 @@
             font-size: 25px;
             font-weight: bold;
         }
-        .product-image-p{
+
+        .product-image-p {
             height: 80%;
             width: 60%;
             padding: 10px;
             margin: 0 10px;
         }
-        .product-info-p{
+
+        .product-info-p {
             width: 40%;
             height: 100%;
             padding: 20px;
         }
 
-        .p-image-p{
+        .p-image-p {
             height: 100%;
             width: 100%;
         }
 
-        .product-info-item{
+        .product-info-item {
             padding: 2px;
             margin: 5px 2px;
         }
-
     </style>
-    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/jquery.simplePagination.min.js"></script>
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/simplePagination.js/1.6/simplePagination.min.css">
+    <style type="text/css">
+        #pagination {
+            margin-left: 30px;
+        }
+    </style>
 </head>
+
 <body>
     <%- include('components/header') %>
-    <div class="content-div" id="content-div"></div>  
-    <div class="background-div" id="a" style="position: fixed; top: 0; display: none;"></div>  
-    <button id="loadMore">Load More</button>
+    <div class="content-div" id="content-div"></div>
+    <div class="background-div" id="a" style="position: fixed; top: 0; display: none;"></div>
+    <div
+        style="display: flex; justify-content: center; align-items: center; position: fixed; bottom: 0; background-color: #1a163d; height: 50px; width: 100%;">
+        <label for="" style="margin-right: 10px; color: white;">Select items</label>
+        <select name="items" id="itemCount">
+            <option value="5">5</option>
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+            <option value="30">30</option>
+            <option value="40">40</option>
+            <option value="50">50</option>
+        </select>
+        <div id="pagination"></div>
+    </div>
+    <script>
+        function createPagination(items, itemsPerPage) {
+            $('#pagination').pagination({
+                items: items,
+                itemsOnPage: itemsPerPage,
+                onPageClick: function (page) {
+                    fetcProducts(page)
+                }
+            });
+        }
+    </script>
 </body>
 <script>
-        const container = document.getElementById("content-div");
-        const loadMoreBtn = document.getElementById("loadMore");
-        let itemBatch = 1;
-        var loadedProducts = [];
-        function fetcProducts(itembatch){
-            fetch("/p/products/"+itembatch++)
-            .then(p=>p.json())
-            .then(products=>{
-                if(!products){
+    const selectItems = document.getElementById("itemCount")
+    let totalPages;
+    fetch("/p/totalItems")
+        .then((result) => {
+            return result.json()
+        })
+        .then(r => {
+            totalPages = r.count
+            createPagination(r.count, selectItems.value)
+        })
+        .catch((err) => {
+            alert(err)
+        });
+</script>
+<script>
+    const container = document.getElementById("content-div");
+    let itemBatch = 1;
+    var loadedProducts = [];
+    selectItems.addEventListener('change', e => {
+        createPagination(totalPages, e.target.value)
+        fetcProducts(1)
+    })
+    function fetcProducts(itembatch) {
+        container.innerHTML = ""
+        let itemCount = selectItems.value
+        fetch("/p/products/" + (itembatch++) + "/" + itemCount || 5)
+            .then(p => p.json())
+            .then(products => {
+                console.log(products);
+                if (!products) {
                     alert("there is no more products to load !");
                     return;
                 }
@@ -171,8 +249,8 @@
                         <div class="product-image"><img class="p-image" src="${element.image}" alt="${element.name}"></div>
                         <div class="product-title">${element.name}</div>
                         <div class="product-price">$ ${element.price}</div>`;
-                    
-                    const  actionDiv = document.createElement("div");
+
+                    const actionDiv = document.createElement("div");
                     actionDiv.className = "product-actions";
 
                     const addToCartBtn = document.createElement("button");
@@ -181,29 +259,27 @@
                     addToCartBtn.id = element.p_id;
                     addToCartBtn.innerText = "Add to Cart";
 
-                    addToCartBtn.addEventListener('click',e=>{
-                        fetch("/cart/"+element.p_id,{method:"post",})
-                        .then(res=>{
-                            // debugger;
-                            console.log(res,"status ye diya hai");
-                            if(res.redirected){
-                                location.href =  res.url
-                                return;
-                            } else {
-                                addToCartBtn.style.color = "grey"
-                                addToCartBtn.innerText = "Added to Cart"
-                            }
-                        })
-                        .catch(err=>console.log(err))
+                    addToCartBtn.addEventListener('click', e => {
+                        fetch("/cart/" + element.p_id, { method: "post", })
+                            .then(res => {
+                                if (res.redirected) {
+                                    location.href = res.url
+                                    return;
+                                } else {
+                                    addToCartBtn.style.color = "grey"
+                                    addToCartBtn.innerText = "Added to Cart"
+                                }
+                            })
+                            .catch(err => console.log(err))
                     })
-                    
-                    
+
+
                     const viewDescBtn = document.createElement("button");
                     viewDescBtn.className = "actionBtn-viewdesc";
                     viewDescBtn.id = element.p_id;
                     viewDescBtn.innerText = "View Desc"
 
-                    viewDescBtn.addEventListener('click',e=>{
+                    viewDescBtn.addEventListener('click', e => {
                         viewDesc(element)
                     })
 
@@ -214,24 +290,15 @@
                     container.appendChild(p_item);
                 });
             })
-        }
-        
-        fetcProducts(itemBatch);
-        
-        loadMoreBtn.addEventListener('click',(e)=>{
-            itemBatch++;
-            fetcProducts(itemBatch);
-            console.log(loadedProducts);
-            container.scrollTop = container.scrollHeight;
-            window.scrollTo(0, container.scrollHeight);
-            
-        })
+    }
 
-        function productDescriptionWindow(p){         
-            const p_details = document.createElement("div")
-            p_details.className = "product-details-p";
-            p_details.id = "popDesc"
-            p_details.innerHTML = `
+    fetcProducts(itemBatch);
+
+    function productDescriptionWindow(p) {
+        const p_details = document.createElement("div")
+        p_details.className = "product-details-p";
+        p_details.id = "popDesc"
+        p_details.innerHTML = `
             <div class="close" id="popUpDesc" onclick="closePopUpDesc()"><button onclick = "closePopUpDesc()" style="color: black; background-color:white; border:none; font-size: 18px;">&times;</button></div>
                 <div style="height: 100%; width: 100%; display: flex;">
                     <div class="product-image-p"><img class="p-image-p" src="${p.image}" alt="${p.name}"></div>
@@ -242,24 +309,21 @@
                         <div class="product-info-item"><p>Description : ${p.description}</p></div>
                     </div>
             </div>`
-            return p_details;
-        }
+        return p_details;
+    }
 
-        function closePopUpDesc(e){
-            const containerA = document.getElementById("a");
-            containerA.style.display = "none";
-            loadMoreBtn.style.display = "block"
-            containerA.innerHTML = '';
-            container.style.display = "grid";
-        }
+    function closePopUpDesc(e) {
+        const containerA = document.getElementById("a");
+        containerA.style.display = "none";
+        containerA.innerHTML = '';
+        container.style.display = "grid";
+    }
 
-        function viewDesc(element){
-            const popup = productDescriptionWindow(element)
-            container.style.display = "none"
-            loadMoreBtn.style.display = "none"
-            document.getElementById("a").appendChild(popup);
-            document.getElementById("a").style.display="flex"
-        }
-    
-    </script>
+    function viewDesc(element) {
+        const popup = productDescriptionWindow(element)
+        container.style.display = "none"
+        document.getElementById("a").appendChild(popup);
+        document.getElementById("a").style.display = "flex"
+    }
+</script>
 </html>

@@ -97,7 +97,14 @@
                         </div>
                         <div class="order_id">
                             <h4>Dispatch to:</h4>
-                            <select name="dispatch_to" id="dispatch_to"></select>
+                            <select name="dispatch_to" id="dispatch-to-<%=element.order_id %>">
+                                <option value="null">--Select nearby warehouse--</option>
+                                <% if (shippers) { %>
+                                    <% shippers.forEach(element => { %>
+                                        <option value="<%= element.shipper_id %>"><%= element.center %></option>
+                                    <% }) %>
+                                <% } %>
+                            </select>
                         </div>
                         <button class="action_btn" onclick="dispatchOrder('<%= element.order_id %>')">Dispatch</button>
                     </div>
@@ -111,7 +118,14 @@
 <script>
 
     function dispatchOrder(id){
-        fetch("/seller/shipTo/"+id,{method:"PATCH"})
+        const shipper_id = document.getElementById("dispatch-to-"+id).value;
+        fetch("/seller/shipTo/"+id,{
+            method:"PATCH",
+            headers:{
+                'content-type':'application/json'
+            },
+            body:JSON.stringify({shipper_id:(shipper_id==null)?null:shipper_id})
+        })
         .then((result) => {
             if(result.ok){
                 alert("Order dispatched successfully");
@@ -123,27 +137,5 @@
             alert(err);
         });
     }
-
-    fetch("/seller/shipTo/all")
-    .then((result) => {
-        return result.json();
-    })
-    .then(res=>{
-        const op_menu = document.getElementById("dispatch_to");
-        res.forEach(e => {
-            const op = document.createElement("option");
-            op.value = e.shipper_id
-            op.innerText = e.center
-            op_menu.appendChild(op);
-        });
-    })
-    .catch((err) => {
-        console.log(err);
-        alert(err)
-    });
-
-    // function dispatchOrder(id){
-    //     console.log(id);
-    // }
 </script>
 </html>

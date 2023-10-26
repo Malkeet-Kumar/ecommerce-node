@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
+    <title>Sales Report</title>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+<body>
+    <%- include('components/header') %>
+    <div  style="display: flex;">
+        <div id="table_div" style="width: auto; text-align: center;"></div>
+        <div class="container" style="display: flex; flex-direction: column; justify-content: center;">
+            <div style="display: flex; height: 30px; width: 100%; align-items: center; padding-left: 50px;">
+                <label for="" style="margin-right: 10px;">Filter By:</label>
+                <select name="" id="filter">
+                    <option value="order_id" selected>All orders</option>
+                    <option value="city">City</option>
+                    <option value="status">Status</option>
+                    <option value="p_id">Products</option>
+                </select>
+            </div>
+            <div style="display: flex;">
+                <div id="piechart1" style="width:auto; height: 500px;"></div>
+                <div id="piechart2" style="width: auto; height: 500px;"></div>
+            </div>
+        </div>
+    </div>
+    </body>
+<script>
+        getData("order_id")
+        document.getElementById("filter").addEventListener('change',e=>{
+            document.getElementById('piechart1').innerHTML = ''
+            getData(e.target.value)
+        })
+       function getData(val){
+         fetch("allorders/"+val)
+            .then((result) => {
+                return result.json()
+            })
+            .then(d=>{
+                console.log(d);
+                orderItemsChart(d,val)
+                orderChart(d,val)
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+        }
+
+        fetch("allorders/p_id")
+            .then((result) => {
+                return result.json()
+            })
+            .then(d=>{
+                createOrderTable(d)
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+
+        function orderItemsChart(orderData, filter){
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(drawChart);
+            function drawChart() {
+                const ProductData=[['Product Name', 'Quantity']];
+                orderData.forEach(element => {
+                    if(filter=="order_id")
+                        ProductData.push([element.name,+element.order_placed]);
+                    else if(filter=="city")
+                        ProductData.push([element.city,+element.order_placed]);
+                    else if(filter=="status")
+                        ProductData.push([element.status,+element.order_placed]);
+                    else if(filter=="p_id")
+                        ProductData.push([element.name,+element.order_placed]);
+                        
+                });
+                console.log(ProductData);
+                var data = google.visualization.arrayToDataTable(ProductData);
+
+                var options = {
+                title: 'Number Of Orders'
+                };
+
+                var chart = new google.visualization.PieChart(document.getElementById('piechart1'));
+
+                chart.draw(data, options);
+            }
+        }
+        function orderChart(orderData,filter){
+            google.charts.load('current', {'packages':['corechart']});
+            google.charts.setOnLoadCallback(drawChart);
+            function drawChart() {
+                const ProductData=[['Product Name', 'Quantity']];
+                orderData.forEach(element => {
+                    if(filter=="order_id")
+                        ProductData.push([element.name,+element.total_order_quantity]);
+                    else if(filter=="city")
+                        ProductData.push([element.city,+element.total_order_quantity]);
+                    else if(filter=="status")
+                        ProductData.push([element.status,+element.total_order_quantity]);
+                    else if(filter=="p_id")
+                        ProductData.push([element.name,+element.total_order_quantity]);
+                });
+                console.log(ProductData);
+                var data = google.visualization.arrayToDataTable(ProductData);
+
+                var options = {
+                title: 'Number of items per order'
+                };
+
+                var chart = new google.visualization.PieChart(document.getElementById('piechart2'));
+
+                chart.draw(data, options);
+            }
+        }
+
+        function createOrderTable(ordersData){
+            console.log("orders data ",ordersData);
+            google.charts.load('current', {'packages':['table']});
+            google.charts.setOnLoadCallback(drawTable);
+            const Orders = [];
+            ordersData.forEach(d=>{
+                Orders.push([d.name,d.order_placed,+d.total_order_quantity,d.status])
+            })
+            function drawTable() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Product Name');
+                data.addColumn('number', 'Orders Placed');
+                data.addColumn('number', 'Items');
+                data.addColumn('string', 'status');
+                data.addRows(Orders);
+
+                var table = new google.visualization.Table(document.getElementById('table_div'));
+
+                table.draw(data, {showRowNumber: true, width: '100%', height: '100%'});
+            }
+
+        }
+
+</script>
+</html>

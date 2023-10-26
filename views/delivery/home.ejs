@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <title>Document</title>
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+        .heading {
+            background-color: #141233;
+            color: white;
+            height: 60px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .content-div{
+            width: 90vw;
+            margin: 0 auto;
+        }
+        .shipment-item{
+            margin: 10px;
+            padding: 10px;
+            width: 90%;
+            height: 100px;
+            background-color: rgb(230, 226, 226);
+            display: grid;
+            grid-template-columns: 50% 30% 10%;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 1px 1px 4px gray;
+        }
+        .actions{
+            display: flex;
+            flex-direction: column;        
+        }
+
+        .deliveredBtn{
+            padding: 10px 15px;
+            color: white;
+            background-color: brown;
+            border: none;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <%- include('components/header') %>
+    <div class="content-div">
+        <table id="mytable" class="mytable" >
+            <thead>
+                <tr>
+                    <th>Shipment Number</th>
+                    <th>Shipping Address</th>
+                    <th>Pincode</th>
+                    <th>City</th>
+                    <th>Deliver By</th>
+                    <th>Total Amount</th>
+                    <th>Payment Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+           </table>
+    </div>
+</body>
+<script src="https://code.jquery.com/jquery-3.7.0.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+<script> 
+    var table;
+    const newDeliveries = document.getElementById("pendingDeliveries")
+    const delivered = document.getElementById('delivered')
+    
+    getNewPending("/shipper/delivery/delivering/all");
+
+    newDeliveries.addEventListener('click',e=>{
+        getNewPending("/shipper/delivery/delivering/all");
+    })
+    
+    delivered.addEventListener('click',e=>{
+        getNewPending("/shipper/delivery/delivered")
+    })
+
+    function getNewPending(url){
+        fetch(url)
+        .then((result) => {
+            return result.json()
+        })
+        .then(e=>{
+           createTable(e)
+        })
+        .catch((err) => {
+            console.log(err);
+        });
+    }
+
+    function createTable(data){
+        if(table){
+            table.clear().rows.add(data).draw();
+        } else {
+           table = new $("#mytable").DataTable(
+            {
+                "rowCallback": function( row, data ) {
+                    const b = document.createElement("button")
+                    b.className = "deliveredBtn"
+                    b.addEventListener('click',e=>{
+                        markDelivered(data.order_id)
+                    })
+                    if(data.status=="delivered")
+                        b.innerText = "Details"
+                    else 
+                        b.innerText = "Deliver"
+                    $('td:eq(7)', row).html(b);
+                    row.id = "row-"+data.order_id
+                },
+                data: data,
+                columns: [
+                    { data: 'order_id' },
+                    { data: 'shipping_address' },
+                    { data: 'pincode' },
+                    { data: 'city' },
+                    { data: 'delivery_date' },
+                    { data: 'bill' },
+                    { data: 'payment_status' },
+                    {data: null}
+                ]
+            }
+           );
+        }
+    }
+
+    function markDelivered(id){
+        console.log(id);
+        fetch("/shipper/delivery/delivering/"+id,{
+            method:"PATCH"
+        })
+        .then((result) => {
+            if(result.ok){
+                alert("Item delivered to user successfully")
+                table.row($(`#row-${id}`)).remove()
+                table.draw()
+            } else {
+                alert("Somthing went wrong")
+            }
+        }).catch((err) => {
+            alert("Somthing went wrong ",err)
+            console.log(err);
+        });
+    }
+
+</script>
+</html>

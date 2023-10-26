@@ -1,80 +1,18 @@
-const mysql = require('mysql');
-const {v4:uuid} = require('uuid')
+const mysql = require('mysql2');
+const {Client} = require('pg');
 
+/* local xampp server */
 module.exports = mysql.createConnection({
-    database:"ECOM",
-    host:"localhost",
-    user:"root",
-    password:"",  
+    uri: 'mysql://root:@localhost:3306/ECOM'
 })
 
-// const db = mysql.createConnection({
-//     database:"ECOM",
-//     host:"localhost",
-//     user:"root",
-//     password:"",  
+/* railcay app server */
+// module.exports = mysql.createConnection({
+//    uri:'mysql://root:mW8SX26YkGYsDw8q70B7@containers-us-west-54.railway.app:7764/railway'
 // })
 
-// const e = "aniketkashyap@gmail.com"
-// function checkIfExists(email){
-//     return new Promise((resolve,reject)=>{
-//         db.query(`select email from ecom_users where email="${e}"`,(err,data)=>{
-//             if(err){
-//                 console.log(err);
-//                 reject(err)
-//             }
-//             resolve(data)
-//         })
-//     })
-// }
-
-
-// checkIfExists(e)
-// .then((result) => {
-//     console.log(result.lenght>0?"User exists":"not found");
-// }).catch((err) => {
-//     console.log(err);
-// });
-
-// // const con = mysql.createConnection({
-// //     database:"ECOM",
-// //     host:"localhost",
-// //     user:"root",
-// //     password:"",  
-// // })
-
-// // con.connect(err=>{
-// //     if(err){
-// //         console.log(err);
-// //         return;
-// //     }
-// //     console.log("connected");
-// // })
-
-// // function addProduct(product){
-// //     con.query(`insert into products values("${uuid()}","${product.name}","${product.description}",${product.price},${product.quantity},"${product.image}")`,(err,res)=>{
-// //         if(err){
-// //             console.log(err);
-// //             return
-// //         }
-// //         console.log(res);
-// //     })
-// // }
-
-
-// // fetch("https://dummyjson.com/products")
-// // .then(res=>res.json())
-// // .then(products=>{
-// //     products.products.forEach(product => {
-// //     const ob = {
-        
-// //         name: product.title,
-// //         description: product.description,
-// //         price: product.price,
-// //         quantity: product.stock,
-// //         image: product.images[0]
-// //     }
-// //     addProduct(ob)
-// //     }) 
-// // })
-// // .catch(err=>console.log(err))
+/* Render External db */
+// module.exports = new Client({
+//     connectionString:"postgres://ecom_6njq_user:Ks6yHIiV8kQFVMg1CrZGLl3Uqdf0Sx1P@dpg-ckqlgrhrfc9c739l3dcg-a.oregon-postgres.render.com/ecom_6njq",
+//     ssl:true
+// })

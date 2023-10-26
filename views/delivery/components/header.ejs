@@ -1,0 +1,43 @@
+<style>
+    .headerBtns{
+        background-color:#642b59;
+        color: white; 
+        border: none; 
+        padding: 8px; 
+        border-radius: 5px; 
+        text-decoration: none;
+    }
+    .logo{
+        height: 10vh;
+        background-color: #0f0a38;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+</style>
+<div class="logo" ><h1>WOW BAZZAR</h1></div>
+<div class="header">
+    <div class="inner-div-header">
+    <% if (loggedin) { %> 
+        <div class="left">
+            <!-- <h1 style=" color: white;">WOW BAZZAR</h1> -->
+            <div>
+                <button class="headerBtns" id="pendingDeliveries">Delivering</button>
+                <button class="headerBtns" id="delivered">Delivered</button>
+            </div>
+        </div>
+        <div class="right">
+            <div class="profile-div">
+                <div class="profile-btn" id="profile-btn">
+                    <img src="/icons/profile-icon.png" alt="notification" height="25px" width="24px">
+                </div>
+                <div class="" id="username" style="font-weight: bold;"><%= username %></div>
+            </div>
+                <div>
+                    <a id="logout" href="logout" class="headerBtns">Logout</a>
+                </div>
+            </div>
+    <% } %>
+    </div>
+</div>

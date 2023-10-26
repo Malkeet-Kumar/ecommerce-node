@@ -1,5 +1,5 @@
 const express = require('express');
-const adminController = require('../contollers/adminController');
+const adminController = require('../controllers/adminController');
 const adminRoutes = express();
 
 adminRoutes.route("/login")
@@ -10,13 +10,16 @@ adminRoutes.route("/")
 .get(adminController.loadLoginPage)
 
 adminRoutes.get("/dashboard",adminController.loadDashboard)
-adminRoutes.get("/logout",adminController.logout)
+adminRoutes.route("/requests/:id")
+.get(adminController.showSellerDetails)
+.patch(adminController.approveSeller)
+.delete(adminController.rejectSeller)
 
-adminRoutes.route("/products")
-.post(adminController.addNewProduct)
-
+adminRoutes.get("/product/requests",adminController.getProductReqPage)
 adminRoutes.route("/products/:id")
-.patch(adminController.editProduct)
-.delete(adminController.deleteProduct)
+.get(adminController.getUnApprovedProducts)
+.patch(adminController.approveProduct)
+
+adminRoutes.get("/logout",adminController.logout)
 
 module.exports = adminRoutes

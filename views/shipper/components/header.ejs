@@ -1,0 +1,40 @@
+<style>
+    .navBtn {
+        background-color: #642b59;
+        color: white;
+        border: none;
+        padding: 8px;
+        border-radius: 5px;
+        text-decoration: none;
+        margin: 5px;
+    }
+</style>
+<% if (loggedin) { %>
+    <div class="header">
+        <div class="inner-div-header">
+            <div class="left">
+                <a class="navBtn" style="background-color: #993c86;" href="/shipper/shipments/onboarding">OnBoarding</a>
+                <a class="navBtn" href="/shipper/shipments/assigndelivery">Assign delivery</a>
+                <a class="navBtn" href="/shipper/shipments/dispatchToNext">Dispatch To Next</a>
+                <a class="navBtn" href="/shipper/shipments/outForDelivery">Delivering Today</a>
+                <a class="navBtn" href="/shipper/shipments/dispatchedToNext">Dispatched Next</a>
+            </div>
+            <div class="right">
+                <div class="profile-div">
+                    <div class="profile-btn" id="profile-btn">
+                        <img src="/icons/profile-icon.png" alt="notification" height="25px" width="24px">
+                    </div>
+                    <h4 class="username" id="username">
+                        <%= username %>
+                    </h4>
+                </div>
+                <div>
+                    <a id="logout" href="/shipper/logout" class="navBtn">Logout</a>
+                </div>
+                <!-- <div>
+                    <a id="logout" href="/admin/login" class="navBtn">LogIn</a>
+                </div> -->
+            </div>
+        </div>
+    </div>
+<% } %>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .content-div {
+            padding: 10px 0px 0px 10px;
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .personal-details, .buisness-details, .documents{
+            height: 500px;
+            width: 30%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+        }
+        .profile-photo{
+            height: 250px;
+            width: 200px;
+        }        
+        .bottom-bar{
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        .action-btn{
+            padding: 10px 25px;
+            height: 45px;
+            width: 120px;
+            font-weight: bold;
+            color: white;
+            background-color: black;
+            margin: 20px;
+            border-radius: 10px;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <%- include('components/header') %>
+    <div class="content-div" id="content-div">
+        <% if (seller.length>0) { %>
+            <% seller.forEach(req => { %>
+                <div class="personal-details">
+                    <h2>Personal Details</h2>
+                    <img class="profile-photo" src="/uploads/profileImages/<%= req.profileImage %>"/>
+                    <h4>Name: <%= req.fName %> <%= req.lName %></h4>
+                    <h4>Gender: <%= req.gender %></h4>
+                    <h4>Dob: <%= new Date(req.dob).toLocaleDateString() %></h4>
+                    <h4>Email: <%= req.email %></h4>
+                    <h4>Mobile: <%= req.mobile %></h4>
+                </div>
+                <div class="buisness-details">
+                    <h2>Buisness Details</h2>
+                    <img src="/uploads/storeImages/<%= req.storeImage %>" alt="" class="profile-photo">
+                    <h4>Buisness Name: <%= req.buisnessName %></h4>
+                    <h4>Buisness Add: <%= req.buisnessAddress %></h4>
+                    <h4>Gst: <%= req.gstNumber %></h4>
+                    <h4>Pan: <%= req.panNumber %></h4>
+                    <h4>Aadhar: <%= req.aadharNumber %></h4>
+                </div>
+                <div class="documents">
+                    <h2>PanCard</h2>
+                    <iframe
+                        src="/uploads/panCard/<%= req.panPdf %>"
+                        width="100%"
+                        height="240px"
+                    ></iframe>
+                    <h2>AadharCard</h2>
+                    <iframe
+                        src="/uploads/aadharCard/<%= req.aadharPdf %>"
+                        width="100%"
+                        height="240px"
+                    ></iframe>
+                </div>
+            <% }) %>
+        <% } %>
+    </div>
+    <div class="bottom-bar">
+        <button class="action-btn" style="background-color: rgb(255, 152, 18);" onclick="approveSeller('<%= seller[0].seller_id %>')">Approve</button>
+        <button class="action-btn" onclick="rejectSeller('<%= seller[0].seller_id %>')">Reject</button>
+    </div>
+</body>
+<script>
+    function approveSeller(id){
+        fetch(id,{
+            method:"PATCH"
+        })
+        .then((res) => {
+            if(res.status==200){
+            alert("Seller approved successfully ")
+                location.href = "/admin/dashboard"
+            }
+        }).catch((err) => {
+            alert(err)
+        });
+    }   
+    function rejectSeller(id){
+        console.log("rejected",id);
+        fetch(id,{
+            method:"DELETE"
+        })
+        .then((res) => {
+            if(res.ok){
+                alert("Request rejected !")
+                location.href = "/admin/dashboard"
+            }
+        }).catch((err) => {
+            alert(err)
+        });
+    }
+</script>
+</html>

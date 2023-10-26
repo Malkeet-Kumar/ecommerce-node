@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login || Signup</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/stylesheets/dashboardHeader.css">
+<style>
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        .heading {
+            background-color: #141233;
+            color: white;
+            height: 60px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-div{
+            height: 92vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+           
+        }
+        .signup-div{
+            height: 92vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-signup-form{
+            height: auto;
+            width: auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            padding: 20px;
+            box-shadow: 1px 1px 5px black;
+        }
+       /* Style the input container */
+        .input-container {
+            display: flex;
+            width: 100%;
+            margin-bottom: 15px;
+        }
+
+        /* Style the form icons */
+        .icon {
+        padding: 10px;
+        background: dodgerblue;
+        color: white;
+        min-width: 50px;
+        text-align: center;
+        }
+
+        /* Style the input fields */
+        .input-field {
+        width: 100%;
+        padding: 10px;
+        outline: none;
+        }
+
+        .input-field:focus {
+        border: 2px solid dodgerblue;
+        }
+
+        /* Set a style for the submit button */
+        .btn {
+        background-color: dodgerblue;
+        color: white;
+        font-weight: bold;
+        font-size: 15px;
+        padding: 12px 20px;
+        border: none;
+        cursor: pointer;
+        width: 100%;
+        opacity: 0.9;
+        }
+
+        .btn:hover {
+        opacity: 1;
+        }
+        .spanAnchor{
+            text-decoration: none;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <%- include('components/header') %>
+    <div class="login-div">
+        <form action="login" method="post" class="login-signup-form" id="login-form">
+            <h3 style="text-align: center; margin-bottom: 15px;">Login</h3 style="text-align: center;">
+          
+            <div class="input-container">
+              <i class="fa fa-envelope icon"></i>
+              <input class="input-field" type="text" placeholder="Email" name="email" id="email">
+            </div>
+          
+            <div class="input-container">
+              <i class="fa fa-key icon"></i>
+              <input class="input-field" type="password" placeholder="Password" name="password" id="password">
+            </div>
+            <% if (err) { %>
+                <p style="color: red; font-weight: bold;" id="err"><%= err %></p>
+            <% } %>
+            <button type="submit" class="btn">Login</button>
+            <!-- <p style="margin-top: 15px;"><a class="spanAnchor" href="/forgotpassword">Forgot Password</a></p> -->
+            <!-- <p style="margin-top: 15px;">New User , <a class="spanAnchor" href="/signup">SignUp here</a></p> -->
+          </form>
+    </div>
+</body>
+<script>
+   document.getElementById("login-form").addEventListener('submit',(e)=>{
+       const email =  document.getElementById("email").value.trim()
+       const password = document.getElementById("password").value.trim()
+       let err = ""
+       if(email.length<5){
+           e.preventDefault()
+           err+="email is required\n"
+           alert(err)
+           return false
+        }
+        if(password.length<8){
+            e.preventDefault()
+            err+="Password is required and must have at least 8 charaters"
+            alert(err)
+            return false
+        }
+        if(err==""){
+            return true;
+        }
+    }) 
+
+    setTimeout(()=>{
+        // if(document.getElementById(err))
+            document.getElementById("err").remove()
+    },4000)
+</script>
+</html>

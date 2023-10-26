@@ -2,7 +2,7 @@ const db = require('../models/db');
 const sendMail = require("../utils/email.js")
 const {v4:uuid} = require('uuid')
 const {createToken,verifyToken} = require('../utils/tokenGenerator.js')
-const {findUser,updateUser, findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, createUserAccount, resetPassword, addItemToCart, deleteCartItem, place_order, getAllOrders, updateOrder} = require('../utils/dbqueries.js')
+const {findUser,updateUser, findUserAndUpdate, findCart, findProduct, getAllCarts, updateCart, createUserAccount, resetPassword, addItemToCart, deleteCartItem, place_order, getAllOrders, updateOrder, getTrackingStatus} = require('../utils/dbqueries.js')
 console.log(uuid());
 function createUser(req,res){
     const {username, email, password, gender, mobile} = req.body
@@ -59,6 +59,10 @@ function changepassword(req,res){
     findUserAndUpdate({table:"ecom_users",field:"id",id:req.session.userId,old_password:curr_password,new_password:new_password})
     .then(result=>{
         if(result.changedRows>0){
+            const msg =`
+                <h1>Hi, ${u.name}</h1>
+                <p>You account Password has been updated succesfully.<br>Thank You</p>`
+            sendMail(u.email,u.name,msg,"Password Updated");
             res.status(200).send("pass updated successfully !")
         }else {
             res.status(404).send("Somthing went wrong !")
@@ -68,15 +72,10 @@ function changepassword(req,res){
         console.log(err);
         res.status(500).send("Internal server error");
     })
-
-    // const msg =`
-    //     <h1>Hi, ${u.name}</h1>
-    //     <p>You account Password has been updated succesfully.<br>Thank You</p>`
-    // sendMail(u.email,u.name,msg,"Password Updated");
 }
 
-function resetpassword(req,res){
 
+function resetpassword(req,res){
     const new_password = req.body.new_password
     const token = req.params.token
     verifyToken(token,(err,data)=>{
@@ -123,6 +122,7 @@ function verifyEmail(req,res){
             .then((result) => {
                 if(result.length<=0){
                     res.status(404).send("User Not Found !");
+                    return
                 }
                 updateUser({table:"ecom_users",modField:"isVerified",queField:"id",id:data.data.id})
                 .then(d=>{
@@ -170,10 +170,10 @@ function loginUser(req,res){
                 setSession(req,result[0]);
                 res.redirect("/home")
             } else {
-                res.render("user/login",{err: "Invalid Email or Password"});
+                res.render("user/login",{err: "Invalid Password"});
             }
         } else {
-            res.render("user/login",{err: "Invalid Email or Password"});
+            res.render("user/login",{err: "User not found"});
         }
         console.log(result);
     })
@@ -204,11 +204,9 @@ function addToCart(req, res) {
         res.status(302).redirect("/login");
         return;
     }
-
     findCart({pid: item,uid: req.session.userId})
     .then((result) => {
         if(result.length>0){
-            console.log(result,"khkjhkjgjkhjkgjhg");
             updateCart({pid:item,uid:req.session.userId,quantity:result[0].order_quantity+1,sub_total:result[0].org_price*(result[0].order_quantity+1)})
             .then(p=>{
                 res.send(p)
@@ -414,6 +412,15 @@ function cancelOrder(req,res){
     });
 }
 
+function trackOrder(req,res){
+    getTrackingStatus({oid:req.params.id})
+    .then((result) => {
+        res.json(result)
+    }).catch((err) => {
+        res.send(err)
+    });
+}
+
 function setSession(req,user){
     req.session.isLoggedIn = true
     req.session.user = true
@@ -445,5 +452,6 @@ module.exports = {
     placeOrder,
     getOrderPage,
     getMyOrders,
-    cancelOrder
+    cancelOrder,
+    trackOrder
 }
